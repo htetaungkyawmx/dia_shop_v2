@@ -48,6 +48,7 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
   late final TextEditingController _instructions;
   late final TextEditingController _instructionsMy;
   late final TextEditingController _sortOrder;
+  late final TextEditingController _supplierGame;
 
   late int _categoryId;
   late String _fulfillment;
@@ -72,6 +73,7 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
     _instructions = TextEditingController(text: p?.instructions ?? '');
     _instructionsMy = TextEditingController(text: p?.instructionsMy ?? '');
     _sortOrder = TextEditingController(text: '${p?.sortOrder ?? 0}');
+    _supplierGame = TextEditingController(text: p?.supplierGame ?? '');
     _categoryId = p?.categoryId ??
         (widget.categories.isEmpty ? 0 : widget.categories.first.id);
     _fulfillment = p?.fulfillmentType ?? 'MANUAL';
@@ -92,6 +94,7 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
       _bannerUrl,
       _instructions,
       _instructionsMy,
+      _supplierGame,
       _sortOrder,
     ]) {
       c.dispose();
@@ -118,6 +121,7 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
       'instructions': _emptyToNull(_instructions),
       'instructionsMy': _emptyToNull(_instructionsMy),
       'fulfillmentType': _fulfillment,
+      'supplierGame': _emptyToNull(_supplierGame),
       'featured': _featured,
       'sortOrder': int.tryParse(_sortOrder.text.trim()) ?? 0,
       'active': _active,
@@ -256,6 +260,16 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                   ],
                   onChanged: (value) =>
                       setState(() => _fulfillment = value ?? 'MANUAL'),
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _supplierGame,
+                  decoration: const InputDecoration(
+                    labelText: 'Smile.one game code (for auto delivery)',
+                    hintText: 'e.g. mobilelegends, freefire, pubgmobile',
+                    helperText:
+                        'Leave blank unless packages here are auto-delivered by Smile.one.',
+                  ),
                 ),
                 const SizedBox(height: 14),
                 TextFormField(

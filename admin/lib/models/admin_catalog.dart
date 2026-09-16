@@ -116,6 +116,8 @@ class AdminVariant {
     this.description,
     this.compareAtPrice,
     this.imageUrl,
+    this.supplier,
+    this.supplierProductId,
   });
 
   final int id;
@@ -138,6 +140,8 @@ class AdminVariant {
   final String? description;
   final int? compareAtPrice;
   final String? imageUrl;
+  final String? supplier;
+  final String? supplierProductId;
 
   bool get isUnlimited => stockType == 'UNLIMITED';
   bool get isCodePool => stockType == 'CODE_POOL';
@@ -170,6 +174,8 @@ class AdminVariant {
         description: json['description'] as String?,
         compareAtPrice: (json['compareAtPrice'] as num?)?.toInt(),
         imageUrl: json['imageUrl'] as String?,
+        supplier: json['supplier'] as String?,
+        supplierProductId: json['supplierProductId'] as String?,
       );
 }
 
@@ -193,6 +199,7 @@ class AdminProduct {
     this.bannerUrl,
     this.instructions,
     this.instructionsMy,
+    this.supplierGame,
   });
 
   final int id;
@@ -213,6 +220,7 @@ class AdminProduct {
   final String? bannerUrl;
   final String? instructions;
   final String? instructionsMy;
+  final String? supplierGame;
 
   int get lowStockCount =>
       variants.where((v) => v.active && v.isLowStock).length;
@@ -240,6 +248,7 @@ class AdminProduct {
         bannerUrl: json['bannerUrl'] as String?,
         instructions: json['instructions'] as String?,
         instructionsMy: json['instructionsMy'] as String?,
+        supplierGame: json['supplierGame'] as String?,
       );
 }
 

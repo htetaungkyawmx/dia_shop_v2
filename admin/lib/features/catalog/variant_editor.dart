@@ -46,8 +46,10 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
   late final TextEditingController _popularity;
   late final TextEditingController _sortOrder;
   late final TextEditingController _initialStock;
+  late final TextEditingController _supplierProductId;
 
   late String _stockType;
+  late String _supplier; // 'NONE' or 'SMILEONE'
   late bool _active;
   bool _busy = false;
 
@@ -70,7 +72,12 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
     _popularity = TextEditingController(text: '${v?.popularity ?? 0}');
     _sortOrder = TextEditingController(text: '${v?.sortOrder ?? 0}');
     _initialStock = TextEditingController(text: '${v?.stockQuantity ?? 0}');
+    _supplierProductId =
+        TextEditingController(text: v?.supplierProductId ?? '');
     _stockType = v?.stockType ?? 'UNLIMITED';
+    _supplier = (v?.supplier == null || v!.supplier!.isEmpty)
+        ? 'NONE'
+        : v.supplier!;
     _active = v?.active ?? true;
   }
 
@@ -89,6 +96,7 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
       _popularity,
       _sortOrder,
       _initialStock,
+      _supplierProductId,
     ]) {
       c.dispose();
     }
@@ -116,6 +124,10 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
       'popularity': int.tryParse(_popularity.text.trim()) ?? 0,
       'sortOrder': int.tryParse(_sortOrder.text.trim()) ?? 0,
       'active': _active,
+      'supplier': _supplier == 'NONE' ? null : _supplier,
+      'supplierProductId': _supplier == 'NONE' || _supplierProductId.text.trim().isEmpty
+          ? null
+          : _supplierProductId.text.trim(),
     };
 
     try {
@@ -297,6 +309,49 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                         child: _numberField(_maxPerOrder, 'Max per order')),
                   ],
                 ),
+                const SizedBox(height: 22),
+                Text('Auto delivery', style: theme.textTheme.titleSmall),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _supplier,
+                  decoration:
+                      const InputDecoration(labelText: 'Delivered by'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'NONE',
+                      child: Text('Manual — filled by staff'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'SMILEONE',
+                      child: Text('Smile.one — delivered automatically'),
+                    ),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _supplier = value ?? 'NONE'),
+                ),
+                if (_supplier == 'SMILEONE') ...[
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _supplierProductId,
+                    decoration: const InputDecoration(
+                      labelText: 'Smile.one product id',
+                      hintText: 'e.g. 13 (from the Smile.one price list)',
+                    ),
+                    validator: (v) => _supplier == 'SMILEONE' &&
+                            (v ?? '').trim().isEmpty
+                        ? 'Enter the Smile.one product id, or set Manual'
+                        : null,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'Set the game on the product itself (Smile.one game code). '
+                      'Auto delivery must also be switched on in Settings.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 22),
                 Text('Display', style: theme.textTheme.titleSmall),
                 const SizedBox(height: 12),
