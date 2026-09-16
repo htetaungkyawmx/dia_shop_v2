@@ -1,0 +1,33 @@
+# Java / Maven
+backend/target/
+backend/uploads/
+*.class
+
+# Flutter / Dart
+**/.dart_tool/
+**/build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/generated_plugin_registrant.dart
+**/ephemeral/
+
+# Android / iOS local config
+**/local.properties
+**/key.properties
+**/*.keystore
+**/*.jks
+**/Pods/
+**/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Secrets and local overrides
+.env
+.env.local

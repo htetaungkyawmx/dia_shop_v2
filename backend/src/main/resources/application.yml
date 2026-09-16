@@ -1,0 +1,78 @@
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: dia-shop-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/dia_shop}
+    username: ${DB_USER:dia_shop}
+    password: ${DB_PASSWORD:dia_shop}
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        default_batch_fetch_size: 32
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  servlet:
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 10MB
+  jackson:
+    default-property-inclusion: non_null
+
+app:
+  jwt:
+    # Override in production. Must be at least 32 bytes for HS256.
+    secret: ${JWT_SECRET:change-me-in-production-please-use-a-long-random-value}
+    issuer: dia-shop
+    access-token-ttl: PT30M
+    refresh-token-ttl: P30D
+  cors:
+    # Dev default accepts any localhost port, because `flutter run -d chrome`
+    # picks a random one. ALWAYS set CORS_ORIGINS to your real domains in
+    # production - this list is paired with allowCredentials.
+    allowed-origins: ${CORS_ORIGINS:http://localhost:*,http://127.0.0.1:*}
+  storage:
+    # local | s3 (s3 is not wired yet; the interface is ready for it)
+    provider: ${STORAGE_PROVIDER:local}
+    local-path: ${STORAGE_PATH:./uploads}
+    public-base-url: ${STORAGE_PUBLIC_URL:http://localhost:8080/uploads}
+  admin:
+    # Created on first boot if no admin exists yet.
+    email: ${ADMIN_EMAIL:admin@diashop.com}
+    password: ${ADMIN_PASSWORD:Admin@12345}
+    display-name: ${ADMIN_NAME:Dia Shop Admin}
+  order:
+    number-prefix: DS
+  google:
+    # Comma-separated OAuth client IDs allowed to sign in. Leave empty to skip the audience check.
+    client-ids: ${GOOGLE_CLIENT_IDS:}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.diashop.api: ${LOG_LEVEL:INFO}

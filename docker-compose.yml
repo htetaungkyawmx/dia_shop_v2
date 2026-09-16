@@ -1,0 +1,50 @@
+# Local development stack: Postgres + the API.
+# Start everything:            docker compose up -d
+# Start just the database:     docker compose up -d postgres
+# Follow the API logs:         docker compose logs -f api
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dia_shop_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dia_shop
+      POSTGRES_USER: dia_shop
+      POSTGRES_PASSWORD: dia_shop
+    ports:
+      - "5433:5432"
+    volumes:
+      - dia_shop_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dia_shop -d dia_shop"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dia_shop_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/dia_shop
+      DB_USER: dia_shop
+      DB_PASSWORD: dia_shop
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-32chars-min}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@diashop.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
+      STORAGE_PATH: /data/uploads
+      STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL:-http://localhost:8080/uploads}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5000,http://localhost:5001,http://localhost:8081}
+    ports:
+      - "8080:8080"
+    volumes:
+      - dia_shop_uploads:/data/uploads
+
+volumes:
+  dia_shop_pgdata:
+  dia_shop_uploads:
