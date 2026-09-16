@@ -90,6 +90,7 @@ fi
 step "Uploading"
 rsync -az "$JAR" "$VPS_HOST:$APP_DIR/app.jar"
 rsync -az backend/Dockerfile.runtime deploy/shared-nginx/docker-compose.yml "$VPS_HOST:$APP_DIR/"
+rsync -az scripts/backup-shared.sh "$VPS_HOST:$APP_DIR/backup.sh"
 rsync -az --delete app/build/web/   "$VPS_HOST:$WEB_ROOT/shop/"
 rsync -az --delete admin/build/web/ "$VPS_HOST:$WEB_ROOT/admin/"
 ok "jar, compose file and web builds uploaded"
@@ -103,6 +104,17 @@ for i in $(seq 1 60); do
   [[ $i -eq 60 ]] && { echo "API did not start. Logs:" >&2; run "cd '$APP_DIR' && docker compose logs --tail=60 api" >&2; exit 1; }
   sleep 3
 done
+
+step "Scheduling the nightly backup"
+CRON_LINE="30 3 * * * $APP_DIR/backup.sh >> /var/log/$SITE_NAME-backup.log 2>&1"
+if run "crontab -l 2>/dev/null | grep -qF '$APP_DIR/backup.sh'"; then
+  ok "already scheduled"
+else
+  # Append to the existing crontab rather than replacing it: other jobs on
+  # this server must survive.
+  run "(crontab -l 2>/dev/null; echo '$CRON_LINE') | crontab -"
+  ok "03:30 daily, 14 days kept in $APP_DIR/backups"
+fi
 
 step "Configuring nginx for $DOMAIN"
 SITE_FILE="/etc/nginx/sites-available/$SITE_NAME"
