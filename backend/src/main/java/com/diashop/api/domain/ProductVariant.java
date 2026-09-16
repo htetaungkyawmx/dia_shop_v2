@@ -74,6 +74,14 @@ public class ProductVariant extends BaseEntity {
     @Column(nullable = false)
     private boolean active = true;
 
+    /** Supplier code for auto-fulfillment ("SMILEONE"), or null for manual. */
+    @Column(length = 30)
+    private String supplier;
+
+    /** The supplier's package id this variant maps to (Smile.one productid). */
+    @Column(name = "supplier_product_id", length = 80)
+    private String supplierProductId;
+
     @Version
     @Column(nullable = false)
     private long version;

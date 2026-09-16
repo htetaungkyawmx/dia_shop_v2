@@ -52,6 +52,10 @@ public class Product extends BaseEntity {
     @Column(name = "fulfillment_type", nullable = false, length = 20)
     private FulfillmentType fulfillmentType = FulfillmentType.MANUAL;
 
+    /** Supplier "game" code for auto-fulfillment, e.g. Smile.one "mobilelegends". */
+    @Column(name = "supplier_game", length = 60)
+    private String supplierGame;
+
     @Column(columnDefinition = "text")
     private String instructions;
 

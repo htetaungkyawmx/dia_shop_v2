@@ -7,6 +7,7 @@ import com.diashop.api.dto.OrderDtos.OrderQuoteResponse;
 import com.diashop.api.dto.OrderDtos.OrderResponse;
 import com.diashop.api.security.AuthUser;
 import com.diashop.api.security.CurrentUser;
+import com.diashop.api.service.AutoFulfillmentService;
 import com.diashop.api.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +32,7 @@ import java.util.function.Function;
 public class OrderController {
 
     private final OrderService orderService;
+    private final AutoFulfillmentService autoFulfillmentService;
 
     @Operation(summary = "Price a basket and check stock without placing the order")
     @PostMapping("/quote")
@@ -43,7 +45,13 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponse> create(@CurrentUser AuthUser principal,
                                                 @Valid @RequestBody CreateOrderRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(principal.id(), request));
+        OrderResponse created = orderService.create(principal.id(), request);
+        // Payment is already taken and committed. Try to deliver mapped
+        // packages through the supplier API; on any problem the order simply
+        // stays pending for staff. Re-read so the customer sees the final state.
+        autoFulfillmentService.tryFulfill(created.id());
+        OrderResponse result = orderService.getForUser(principal.id(), created.id());
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping

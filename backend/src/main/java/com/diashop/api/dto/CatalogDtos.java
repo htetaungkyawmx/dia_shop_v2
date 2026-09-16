@@ -84,7 +84,8 @@ public final class CatalogDtos {
             Long id, Long productId, String productName, String sku, String name, String nameMy,
             String bonusText, String description, long price, Long compareAtPrice, long costPrice,
             String imageUrl, StockType stockType, int stockQuantity, int availableCodes,
-            int lowStockThreshold, int maxPerOrder, int popularity, int sortOrder, boolean active
+            int lowStockThreshold, int maxPerOrder, int popularity, int sortOrder, boolean active,
+            String supplier, String supplierProductId
     ) {
     }
 
@@ -92,7 +93,7 @@ public final class CatalogDtos {
             Long id, String slug, String name, String nameMy, String description, String descriptionMy,
             String imageUrl, String bannerUrl, String instructions, String instructionsMy,
             FulfillmentType fulfillmentType, boolean featured, int sortOrder, boolean active,
-            Long categoryId, String categoryName,
+            String supplierGame, Long categoryId, String categoryName,
             List<ProductFieldResponse> fields, List<AdminVariantResponse> variants
     ) {
     }

@@ -172,6 +172,7 @@ public class AdminCatalogService {
         product.setInstructions(r.instructions());
         product.setInstructionsMy(r.instructionsMy());
         product.setFulfillmentType(r.fulfillmentType());
+        product.setSupplierGame(blankToNull(r.supplierGame()));
         product.setFeatured(r.featured());
         product.setSortOrder(r.sortOrder());
         product.setActive(r.active());
@@ -253,6 +254,10 @@ public class AdminCatalogService {
         auditService.record(admin, "VARIANT_ARCHIVED", "ProductVariant", variantId, variant.getSku());
     }
 
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
     private void applyVariant(ProductVariant variant, VariantUpsertRequest r, boolean isNew) {
         variant.setSku(r.sku());
         variant.setName(r.name());
@@ -268,6 +273,8 @@ public class AdminCatalogService {
         variant.setPopularity(r.popularity());
         variant.setSortOrder(r.sortOrder());
         variant.setActive(r.active());
+        variant.setSupplier(blankToNull(r.supplier()));
+        variant.setSupplierProductId(blankToNull(r.supplierProductId()));
 
         StockType previous = variant.getStockType();
         variant.setStockType(r.stockType());
@@ -386,7 +393,7 @@ public class AdminCatalogService {
                 product.getDescription(), product.getDescriptionMy(), product.getImageUrl(), product.getBannerUrl(),
                 product.getInstructions(), product.getInstructionsMy(), product.getFulfillmentType(),
                 product.isFeatured(), product.getSortOrder(), product.isActive(),
-                product.getCategory().getId(), product.getCategory().getName(),
+                product.getSupplierGame(), product.getCategory().getId(), product.getCategory().getName(),
                 product.getFields().stream()
                         .map(f -> ProductFieldResponse.of(f, catalogService.parseOptions(f.getOptions())))
                         .toList(),
@@ -411,7 +418,8 @@ public class AdminCatalogService {
                 v.getId(), v.getProduct().getId(), v.getProduct().getName(), v.getSku(), v.getName(), v.getNameMy(),
                 v.getBonusText(), v.getDescription(), v.getPrice(), v.getCompareAtPrice(), v.getCostPrice(),
                 v.getImageUrl(), v.getStockType(), v.getStockQuantity(), availableCodes,
-                v.getLowStockThreshold(), v.getMaxPerOrder(), v.getPopularity(), v.getSortOrder(), v.isActive());
+                v.getLowStockThreshold(), v.getMaxPerOrder(), v.getPopularity(), v.getSortOrder(), v.isActive(),
+                v.getSupplier(), v.getSupplierProductId());
     }
 
     private Map<Long, Integer> codeCountsFor(List<ProductVariant> variants) {

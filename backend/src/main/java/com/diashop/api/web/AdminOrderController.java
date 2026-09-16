@@ -7,6 +7,7 @@ import com.diashop.api.dto.OrderDtos.ProcessOrderRequest;
 import com.diashop.api.dto.OrderDtos.RejectOrderRequest;
 import com.diashop.api.security.AuthUser;
 import com.diashop.api.security.CurrentUser;
+import com.diashop.api.service.AutoFulfillmentService;
 import com.diashop.api.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +30,7 @@ import java.util.function.Function;
 public class AdminOrderController {
 
     private final OrderService orderService;
+    private final AutoFulfillmentService autoFulfillmentService;
     private final CurrentUserService currentUserService;
 
     @GetMapping
@@ -43,6 +45,13 @@ public class AdminOrderController {
 
     @GetMapping("/{id}")
     public OrderResponse get(@PathVariable Long id) {
+        return orderService.getForAdmin(id);
+    }
+
+    @Operation(summary = "Retry auto delivery through the supplier API for this order")
+    @PostMapping("/{id}/auto-fulfill")
+    public OrderResponse autoFulfill(@PathVariable Long id) {
+        autoFulfillmentService.tryFulfill(id);
         return orderService.getForAdmin(id);
     }
 

@@ -114,6 +114,7 @@ public final class AdminDtos {
             boolean featured,
             int sortOrder,
             boolean active,
+            @Size(max = 60) String supplierGame,
             @Valid List<ProductFieldRequest> fields
     ) {
     }
@@ -135,7 +136,9 @@ public final class AdminDtos {
             @Min(1) int maxPerOrder,
             @Min(0) int popularity,
             int sortOrder,
-            boolean active
+            boolean active,
+            @Size(max = 30) String supplier,
+            @Size(max = 80) String supplierProductId
     ) {
     }
 

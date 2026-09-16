@@ -61,4 +61,8 @@ public class OrderItem {
 
     @Column(name = "delivered_secret", length = 255)
     private String deliveredSecret;
+
+    /** Provider order id when this line was delivered through a supplier API. */
+    @Column(name = "supplier_order_id", length = 120)
+    private String supplierOrderId;
 }
