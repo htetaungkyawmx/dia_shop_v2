@@ -40,6 +40,10 @@ class AdminApi {
 
   Future<AppUser> me() async => AppUser.fromJson(await _api.get<Map<String, dynamic>>('/me'));
 
+  Future<void> changePassword({required String current, required String next}) async {
+    await _api.post<dynamic>('/me/password', body: {'currentPassword': current, 'newPassword': next});
+  }
+
   Future<void> logout(String? refreshToken) async {
     await _api.post<dynamic>('/auth/logout', body: {'refreshToken': refreshToken ?? ''});
   }

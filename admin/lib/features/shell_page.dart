@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../app/theme.dart';
 import '../providers/providers.dart';
+import 'auth/change_password_dialog.dart';
 
 /// Persistent navigation rail with live badges for the two queues that need
 /// attention: pending orders and pending top-ups.
@@ -86,6 +87,15 @@ class AdminShell extends ConsumerWidget {
                       PopupMenuButton<String>(
                         tooltip: user?.email ?? '',
                         onSelected: (value) async {
+                          if (value == 'password') {
+                            final changed = await ChangePasswordDialog.show(context);
+                            // The server revokes every session on a change,
+                            // so sign in again with the new password.
+                            if (changed == true) {
+                              await ref.read(authProvider.notifier).logout();
+                              if (context.mounted) context.go('/login');
+                            }
+                          }
                           if (value == 'logout') {
                             await ref.read(authProvider.notifier).logout();
                             if (context.mounted) context.go('/login');
@@ -104,6 +114,14 @@ class AdminShell extends ConsumerWidget {
                             ),
                           ),
                           const PopupMenuDivider(),
+                          const PopupMenuItem(
+                            value: 'password',
+                            child: Row(children: [
+                              Icon(Icons.key_rounded, size: 18),
+                              SizedBox(width: 10),
+                              Text('Change password'),
+                            ]),
+                          ),
                           const PopupMenuItem(
                             value: 'logout',
                             child: Row(children: [
