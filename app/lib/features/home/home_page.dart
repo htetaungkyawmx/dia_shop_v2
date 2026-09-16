@@ -147,8 +147,8 @@ class _HomeContent extends ConsumerWidget {
                 maxCrossAxisExtent: 220,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                // Image (1.35 ratio) plus two text lines.
-                mainAxisExtent: 196,
+                // Room for a two-line Burmese name; the image flexes to fill the rest.
+                mainAxisExtent: 236,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {

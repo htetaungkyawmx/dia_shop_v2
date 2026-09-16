@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/admin_catalog.dart';
 import '../../providers/providers.dart';
 import '../../widgets/admin_widgets.dart';
+import '../../widgets/image_url_field.dart';
 
 /// Create or edit a product, including the input fields buyers must fill in
 /// (Player ID, Server, account email…).
@@ -250,23 +251,9 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                   decoration: const InputDecoration(labelText: 'Burmese description'),
                 ),
                 const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _imageUrl,
-                        decoration: const InputDecoration(labelText: 'Image URL'),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _bannerUrl,
-                        decoration: const InputDecoration(labelText: 'Banner URL'),
-                      ),
-                    ),
-                  ],
-                ),
+                ImageUrlField(controller: _imageUrl, label: 'Product image (square works best)'),
+                const SizedBox(height: 14),
+                ImageUrlField(controller: _bannerUrl, label: 'Banner image (wide)', folder: 'banners'),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _instructions,

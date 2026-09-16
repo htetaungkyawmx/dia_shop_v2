@@ -30,39 +30,44 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 1.35,
-                  child: AppImage(
+            // The image takes whatever height the text leaves. A fixed aspect
+            // ratio overflowed the grid cell as soon as a name wrapped, and
+            // Burmese script needs more line height than Latin.
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  AppImage(
                     url: product.imageUrl,
                     radius: AppTheme.radius,
                     fallbackIcon: Icons.sports_esports_rounded,
                   ),
-                ),
-                if (!product.inStock)
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(AppTheme.radius),
-                      ),
-                      child: Center(
-                        child: StatusChip(label: strings.outOfStock, color: Colors.white),
+                  if (!product.inStock)
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(AppTheme.radius),
+                        ),
+                        child: Center(
+                          child: StatusChip(
+                              label: strings.outOfStock, color: Colors.white),
+                        ),
                       ),
                     ),
-                  ),
-                if (product.fulfillmentType == 'CODE_DELIVERY' && product.inStock)
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: StatusChip(
-                      label: strings.instantDelivery,
-                      color: AppTheme.accent,
-                      icon: Icons.bolt_rounded,
+                  if (product.fulfillmentType == 'CODE_DELIVERY' &&
+                      product.inStock)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: StatusChip(
+                        label: strings.instantDelivery,
+                        color: AppTheme.accent,
+                        icon: Icons.bolt_rounded,
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
@@ -73,7 +78,8 @@ class ProductCard extends StatelessWidget {
                     product.localisedName(strings.isBurmese),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   if (product.startingPrice != null)
@@ -127,13 +133,16 @@ class CategoryPill extends StatelessWidget {
           gradient: selected ? AppTheme.brandGradient : null,
           color: selected ? null : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: selected ? Colors.transparent : theme.dividerColor),
+          border: Border.all(
+              color: selected ? Colors.transparent : theme.dividerColor),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 16, color: selected ? Colors.white : theme.colorScheme.onSurface),
+              Icon(icon,
+                  size: 16,
+                  color: selected ? Colors.white : theme.colorScheme.onSurface),
               const SizedBox(width: 6),
             ],
             Text(
@@ -194,7 +203,8 @@ class VariantTile extends StatelessWidget {
                   gradient: AppTheme.goldGradient,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.diamond_rounded, color: Colors.white, size: 21),
+                child: const Icon(Icons.diamond_rounded,
+                    color: Colors.white, size: 21),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -203,23 +213,30 @@ class VariantTile extends StatelessWidget {
                   children: [
                     Text(
                       variant.localisedName(strings.isBurmese),
-                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
-                    if (variant.bonusText != null || variant.isLowStock || !enabled) ...[
+                    if (variant.bonusText != null ||
+                        variant.isLowStock ||
+                        !enabled) ...[
                       const SizedBox(height: 5),
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
                         children: [
                           if (variant.bonusText != null)
-                            StatusChip(label: variant.bonusText!, color: AppTheme.success),
+                            StatusChip(
+                                label: variant.bonusText!,
+                                color: AppTheme.success),
                           if (enabled && variant.isLowStock)
                             StatusChip(
                               label: strings.lowStock(variant.remaining!),
                               color: AppTheme.warning,
                             ),
                           if (!enabled)
-                            StatusChip(label: strings.outOfStock, color: AppTheme.danger),
+                            StatusChip(
+                                label: strings.outOfStock,
+                                color: AppTheme.danger),
                         ],
                       ),
                     ],
@@ -289,13 +306,16 @@ class BalancePill extends StatelessWidget {
             Container(
               width: 20,
               height: 20,
-              decoration: BoxDecoration(gradient: AppTheme.goldGradient, shape: BoxShape.circle),
-              child: const Icon(Icons.currency_exchange_rounded, size: 12, color: Colors.white),
+              decoration: BoxDecoration(
+                  gradient: AppTheme.goldGradient, shape: BoxShape.circle),
+              child: const Icon(Icons.currency_exchange_rounded,
+                  size: 12, color: Colors.white),
             ),
             const SizedBox(width: 7),
             Text(
               Format.number(balance),
-              style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+              style: theme.textTheme.labelLarge
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
           ],
         ),

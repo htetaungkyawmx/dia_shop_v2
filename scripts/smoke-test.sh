@@ -25,17 +25,19 @@ import sys, json
 try:
     node = json.load(sys.stdin)
 except Exception:
-    sys.exit(1)
+    sys.exit(0)
 for step in sys.argv[1:]:
     node = node[int(step)] if step.lstrip("-").isdigit() else node[step]
 print(node)
-' "$@" 2>/dev/null
+' "$@" 2>/dev/null || true
+  # Never fail: under `set -e -o pipefail` a missing key would otherwise end
+  # the whole run silently, hiding the very failure we are looking for.
 }
 
 check() { # check <name> <expected-status> <curl args...>
   local name="$1" expected="$2"; shift 2
   local status
-  status=$(curl -s -o /tmp/smoke-body.json -w '%{http_code}' "$@")
+  status=$(curl -s -o /tmp/smoke-body.json -w '%{http_code}' "$@" || true)
   if [[ "$status" == "$expected" ]]; then
     printf '  \033[32m✓\033[0m %s\n' "$name"
     pass=$((pass + 1))
@@ -116,8 +118,21 @@ check "audit logs"           200 "${AA[@]}" "$API/admin/audit-logs"
 echo
 echo "Purchase flow"
 METHOD_ID=$(curl -s "$API/public/payment-methods" | json 0 id)
+
+# Upload the slip the way the Flutter app does: Dio labels in-memory bytes
+# application/octet-stream, and web pickers often give a name with no
+# extension. The server has to go by the bytes, or every top-up screenshot fails.
+SLIP=$(mktemp)
+echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' | base64 -d > "$SLIP"
+SLIP_URL=$(curl -s "${UA[@]}" -F "file=@$SLIP;filename=image_picker_blob;type=application/octet-stream" \
+  "$API/uploads/payment-slip" | json url)
+rm -f "$SLIP"
+[[ "$SLIP_URL" == http* ]] && { printf '  \033[32m✓\033[0m payment slip upload (as the app sends it)\n'; pass=$((pass+1)); } \
+                          || { printf '  \033[31m✗\033[0m payment slip upload (as the app sends it)\n'; fail=$((fail+1)); }
+check "uploaded slip is served back" 200 "$SLIP_URL"
+
 TOPUP_ID=$(curl -s -X POST "$API/wallet/topups" "${UA[@]}" -H 'Content-Type: application/json' \
-  -d "{\"paymentMethodId\":$METHOD_ID,\"amount\":50000,\"referenceNo\":\"SMOKE$STAMP\"}" | json id)
+  -d "{\"paymentMethodId\":$METHOD_ID,\"amount\":50000,\"referenceNo\":\"SMOKE$STAMP\",\"screenshotUrl\":\"$SLIP_URL\"}" | json id)
 check "approve top-up" 200 -X POST "${AA[@]}" -H 'Content-Type: application/json' -d '{}' \
   "$API/admin/topups/$TOPUP_ID/approve"
 

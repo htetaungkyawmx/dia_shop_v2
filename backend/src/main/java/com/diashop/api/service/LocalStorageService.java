@@ -15,8 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.util.Locale;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -25,10 +24,6 @@ import java.util.UUID;
 @ConditionalOnProperty(name = "app.storage.provider", havingValue = "local", matchIfMissing = true)
 public class LocalStorageService implements StorageService {
 
-    private static final Set<String> ALLOWED_TYPES =
-            Set.of("image/jpeg", "image/png", "image/webp", "image/heic");
-    private static final Set<String> ALLOWED_EXTENSIONS =
-            Set.of("jpg", "jpeg", "png", "webp", "heic");
     private static final long MAX_BYTES = 8L * 1024 * 1024;
 
     private final AppProperties props;
@@ -41,17 +36,12 @@ public class LocalStorageService implements StorageService {
         if (file.getSize() > MAX_BYTES) {
             throw ApiException.badRequest("FILE_TOO_LARGE", "Images must be 8MB or smaller.");
         }
-        String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase(Locale.ROOT);
-        if (!ALLOWED_TYPES.contains(contentType)) {
-            throw ApiException.badRequest("UNSUPPORTED_FILE_TYPE", "Only JPG, PNG, WEBP or HEIC images are allowed.");
-        }
-        String extension = extensionOf(file.getOriginalFilename());
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw ApiException.badRequest("UNSUPPORTED_FILE_TYPE", "Only JPG, PNG, WEBP or HEIC images are allowed.");
-        }
-        if (!isRealImage(file)) {
-            throw ApiException.badRequest("UNSUPPORTED_FILE_TYPE", "That file is not a readable image.");
-        }
+        // The declared content type and the file name are both ignored: the
+        // stored extension comes from the bytes themselves. See ImageSignature.
+        String extension = detectFormat(file)
+                .map(format -> format.extension)
+                .orElseThrow(() -> ApiException.badRequest("UNSUPPORTED_FILE_TYPE",
+                        "Only JPG, PNG, WEBP or HEIC images are allowed."));
 
         // Date folders keep any single directory small as volume grows.
         String relativeDir = sanitiseFolder(folder) + "/" + LocalDate.now();
@@ -92,23 +82,12 @@ public class LocalStorageService implements StorageService {
         }
     }
 
-    private boolean isRealImage(MultipartFile file) {
+    private Optional<ImageSignature.Format> detectFormat(MultipartFile file) {
         try (InputStream in = file.getInputStream()) {
-            return javax.imageio.ImageIO.read(in) != null;
+            return ImageSignature.detect(in.readNBytes(ImageSignature.HEADER_BYTES));
         } catch (IOException e) {
-            return false;
-        } catch (Exception e) {
-            // HEIC has no ImageIO reader by default; the content type check stands in.
-            return "image/heic".equalsIgnoreCase(file.getContentType());
+            return Optional.empty();
         }
-    }
-
-    private String extensionOf(String originalName) {
-        if (originalName == null) {
-            return "";
-        }
-        int dot = originalName.lastIndexOf('.');
-        return dot < 0 ? "" : originalName.substring(dot + 1).toLowerCase(Locale.ROOT);
     }
 
     private String sanitiseFolder(String folder) {

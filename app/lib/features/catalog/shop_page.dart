@@ -119,7 +119,7 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                         maxCrossAxisExtent: 220,
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
-                        mainAxisExtent: 196,
+                        mainAxisExtent: 236,
                       ),
                       itemCount: list.length,
                       itemBuilder: (context, index) => ProductCard(

@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../core/api_client.dart';
 import '../models/admin_catalog.dart';
 import '../models/dashboard.dart';
@@ -40,6 +42,15 @@ class AdminApi {
 
   Future<void> logout(String? refreshToken) async {
     await _api.post<dynamic>('/auth/logout', body: {'refreshToken': refreshToken ?? ''});
+  }
+
+  /// Uploads a catalog or banner image and returns its public URL.
+  Future<String> uploadImage(List<int> bytes, {required String fileName, String folder = 'catalog'}) async {
+    final json = await _api.upload<Map<String, dynamic>>(
+      '/admin/uploads/image?folder=$folder',
+      file: MultipartFile.fromBytes(bytes, filename: fileName),
+    );
+    return json['url'] as String;
   }
 
   // ------------------------------------------------------------ dashboard
