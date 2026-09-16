@@ -124,10 +124,18 @@ final isSignedInProvider = Provider<bool>((ref) => ref.watch(authProvider).value
 
 // --------------------------------------------------------------- dashboard
 
-final dashboardProvider = FutureProvider<Dashboard>((ref) => ref.watch(apiProvider).dashboard());
+// Every admin provider below is gated on the session. Without this an admin
+// endpoint is requested during the first frame of a cold start, before the
+// stored session has been checked, and again on the way out after sign-out.
+final dashboardProvider = FutureProvider<Dashboard>((ref) async {
+  if (!ref.watch(isSignedInProvider)) return Dashboard.empty;
+  return ref.watch(apiProvider).dashboard();
+});
 
-final settingsProvider =
-    FutureProvider<Map<String, String>>((ref) => ref.watch(apiProvider).settings());
+final settingsProvider = FutureProvider<Map<String, String>>((ref) async {
+  if (!ref.watch(isSignedInProvider)) return const {};
+  return ref.watch(apiProvider).settings();
+});
 
 // ------------------------------------------------------------------ orders
 
@@ -145,9 +153,10 @@ class OrderFilter {
   int get hashCode => Object.hash(status, query);
 }
 
-final ordersProvider = FutureProvider.family<Paged<Order>, OrderFilter>(
-  (ref, filter) => ref.watch(apiProvider).orders(query: filter.query, status: filter.status),
-);
+final ordersProvider = FutureProvider.family<Paged<Order>, OrderFilter>((ref, filter) async {
+  if (!ref.watch(isSignedInProvider)) return Paged.empty();
+  return ref.watch(apiProvider).orders(query: filter.query, status: filter.status);
+});
 
 final orderProvider =
     FutureProvider.family<Order, int>((ref, id) => ref.watch(apiProvider).order(id));
@@ -168,14 +177,17 @@ class TopupFilter {
   int get hashCode => Object.hash(status, query);
 }
 
-final topupsProvider = FutureProvider.family<Paged<TopupRequest>, TopupFilter>(
-  (ref, filter) => ref.watch(apiProvider).topups(query: filter.query, status: filter.status),
-);
+final topupsProvider = FutureProvider.family<Paged<TopupRequest>, TopupFilter>((ref, filter) async {
+  if (!ref.watch(isSignedInProvider)) return Paged.empty();
+  return ref.watch(apiProvider).topups(query: filter.query, status: filter.status);
+});
 
 // ----------------------------------------------------------------- catalog
 
-final categoriesProvider =
-    FutureProvider<List<AdminCategory>>((ref) => ref.watch(apiProvider).categories());
+final categoriesProvider = FutureProvider<List<AdminCategory>>((ref) async {
+  if (!ref.watch(isSignedInProvider)) return const [];
+  return ref.watch(apiProvider).categories();
+});
 
 class ProductFilter {
   const ProductFilter({this.query, this.categoryId, this.active});
@@ -195,13 +207,15 @@ class ProductFilter {
   int get hashCode => Object.hash(query, categoryId, active);
 }
 
-final productsProvider = FutureProvider.family<Paged<AdminProduct>, ProductFilter>(
-  (ref, filter) => ref.watch(apiProvider).products(
+final productsProvider =
+    FutureProvider.family<Paged<AdminProduct>, ProductFilter>((ref, filter) async {
+  if (!ref.watch(isSignedInProvider)) return Paged.empty();
+  return ref.watch(apiProvider).products(
         query: filter.query,
         categoryId: filter.categoryId,
         active: filter.active,
-      ),
-);
+      );
+});
 
 final productProvider =
     FutureProvider.family<AdminProduct, int>((ref, id) => ref.watch(apiProvider).product(id));
@@ -234,13 +248,14 @@ class UserFilter {
   int get hashCode => Object.hash(query, status, role);
 }
 
-final usersProvider = FutureProvider.family<Paged<AdminUser>, UserFilter>(
-  (ref, filter) => ref.watch(apiProvider).users(
+final usersProvider = FutureProvider.family<Paged<AdminUser>, UserFilter>((ref, filter) async {
+  if (!ref.watch(isSignedInProvider)) return Paged.empty();
+  return ref.watch(apiProvider).users(
         query: filter.query,
         status: filter.status,
         role: filter.role,
-      ),
-);
+      );
+});
 
 final userTransactionsProvider = FutureProvider.family<Paged<WalletTransaction>, int>(
   (ref, userId) => ref.watch(apiProvider).userTransactions(userId),
@@ -248,9 +263,12 @@ final userTransactionsProvider = FutureProvider.family<Paged<WalletTransaction>,
 
 // ----------------------------------------------------------------- support
 
-final ticketsProvider = FutureProvider.family<Paged<SupportTicket>, String?>(
-  (ref, status) => ref.watch(apiProvider).tickets(status: status),
-);
+final ticketsProvider = FutureProvider.family<Paged<SupportTicket>, String?>((ref, status) async {
+  if (!ref.watch(isSignedInProvider)) return Paged.empty();
+  return ref.watch(apiProvider).tickets(status: status);
+});
 
-final paymentMethodsProvider =
-    FutureProvider<List<PaymentMethod>>((ref) => ref.watch(apiProvider).paymentMethods());
+final paymentMethodsProvider = FutureProvider<List<PaymentMethod>>((ref) async {
+  if (!ref.watch(isSignedInProvider)) return const [];
+  return ref.watch(apiProvider).paymentMethods();
+});

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/login_page.dart';
+import '../features/auth/splash_page.dart';
 import '../features/catalog/products_page.dart';
 import '../features/dashboard/dashboard_page.dart';
 import '../features/orders/orders_page.dart';
@@ -13,19 +14,44 @@ import '../features/topups/topups_page.dart';
 import '../features/users/users_page.dart';
 import '../providers/providers.dart';
 
+
+/// Re-runs the redirect when the session changes.
+///
+/// The router is built once and kept; watching [authProvider] here instead
+/// would rebuild the whole GoRouter on every auth change, which briefly
+/// rebuilds the route tree before the new redirect applies.
+class _AuthRefresh extends ChangeNotifier {
+  _AuthRefresh(Ref ref) {
+    ref.listen(authProvider, (_, __) => notifyListeners());
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authProvider);
+  final refresh = _AuthRefresh(ref);
+  ref.onDispose(refresh.dispose);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refresh,
     redirect: (context, state) {
-      if (auth.isLoading) return null;
+      final auth = ref.read(authProvider);
+      // Hold on the splash until the stored session has been checked.
+      // Without this the shell renders first, fires its dashboard request
+      // while signed out, and only then redirects to the sign-in screen.
+      if (auth.isLoading) {
+        return state.matchedLocation == '/splash' ? null : '/splash';
+      }
       final signedIn = auth.value != null;
-      if (!signedIn && state.matchedLocation != '/login') return '/login';
-      if (signedIn && state.matchedLocation == '/login') return '/';
+      if (!signedIn) {
+        return state.matchedLocation == '/login' ? null : '/login';
+      }
+      if (state.matchedLocation == '/login' || state.matchedLocation == '/splash') {
+        return '/';
+      }
       return null;
     },
     routes: [
+      GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AdminShell(navigationShell: navigationShell),

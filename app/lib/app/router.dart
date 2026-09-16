@@ -28,14 +28,29 @@ final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 /// Routes a signed-out visitor may open. Everything else redirects to sign-in.
 const _publicPrefixes = <String>['/login', '/register', '/shop', '/product', '/search'];
 
+
+/// Re-runs the redirect when the session changes.
+///
+/// The router is built once and kept; watching [authProvider] here instead
+/// would rebuild the whole GoRouter on every auth change, which briefly
+/// rebuilds the route tree before the new redirect applies.
+class _AuthRefresh extends ChangeNotifier {
+  _AuthRefresh(Ref ref) {
+    ref.listen(authProvider, (_, __) => notifyListeners());
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authProvider);
+  final refresh = _AuthRefresh(ref);
+  ref.onDispose(refresh.dispose);
 
   return GoRouter(
     navigatorKey: _rootKey,
     initialLocation: '/',
     debugLogDiagnostics: false,
+    refreshListenable: refresh,
     redirect: (context, state) {
+      final auth = ref.read(authProvider);
       // Hold on the splash until the first auth check finishes, otherwise a
       // signed-in user briefly lands on the login screen on a cold start.
       if (auth.isLoading) return state.matchedLocation == '/splash' ? null : '/splash';

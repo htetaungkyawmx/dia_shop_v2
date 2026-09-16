@@ -99,6 +99,28 @@ class Dashboard {
   final List<TopSeller> topSellers;
   final List<LowStockItem> lowStock;
 
+  /// All-zero placeholder used while signed out, so the shell can render its
+  /// badges without an admin request ever leaving the browser.
+  static const empty = Dashboard(
+    pendingOrders: 0,
+    pendingTopups: 0,
+    openTickets: 0,
+    totalUsers: 0,
+    activeUsers: 0,
+    newUsers7d: 0,
+    revenueToday: 0,
+    revenue7d: 0,
+    revenue30d: 0,
+    profit30d: 0,
+    ordersToday: 0,
+    orders30d: 0,
+    topups30d: 0,
+    walletLiability: 0,
+    revenueSeries: [],
+    topSellers: [],
+    lowStock: [],
+  );
+
   factory Dashboard.fromJson(Map<String, dynamic> json) {
     int read(String key) => (json[key] as num?)?.toInt() ?? 0;
     return Dashboard(
