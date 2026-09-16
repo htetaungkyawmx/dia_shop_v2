@@ -1,0 +1,85 @@
+# Production stack for a single VPS.
+#
+#   cd /opt/dia-shop && docker compose -f deploy/docker-compose.prod.yml up -d --build
+#
+# Caddy terminates TLS (certificates are obtained and renewed automatically),
+# serves the two Flutter web builds as static files, and proxies /api to the
+# Spring Boot container. Nothing but Caddy is exposed to the internet.
+name: dia-shop
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-dia_shop}
+      POSTGRES_USER: ${DB_USER:-dia_shop}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      # Deterministic collation so ORDER BY does not shift between images.
+      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dia_shop} -d ${DB_NAME:-dia_shop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    # Never published: only the api container reaches it, over the private network.
+    expose:
+      - "5432"
+
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-dia_shop}
+      DB_USER: ${DB_USER:-dia_shop}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL is required}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
+      CORS_ORIGINS: https://${DOMAIN:?DOMAIN is required},https://admin.${DOMAIN}
+      STORAGE_PATH: /data/uploads
+      STORAGE_PUBLIC_URL: https://api.${DOMAIN}/uploads
+      GOOGLE_CLIENT_IDS: ${GOOGLE_CLIENT_IDS:-}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=60 -XX:+UseSerialGC}
+    volumes:
+      - uploads:/data/uploads
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN is required}
+      TLS_EMAIL: ${TLS_EMAIL:?TLS_EMAIL is required}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web:/srv/web:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  uploads:
+  caddy_data:
+  caddy_config:

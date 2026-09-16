@@ -1,11 +1,11 @@
 {
-    "name": "dia_shop",
-    "short_name": "dia_shop",
+    "name": "Dia Shop",
+    "short_name": "Dia Shop",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0E1016",
+    "theme_color": "#6C5CE7",
+    "description": "Game top-ups, gift cards and premium subscriptions.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

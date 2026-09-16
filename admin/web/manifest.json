@@ -1,11 +1,11 @@
 {
-    "name": "dia_shop_admin",
-    "short_name": "dia_shop_admin",
+    "name": "Dia Shop Admin",
+    "short_name": "Dia Admin",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0D0F15",
+    "theme_color": "#4F46E5",
+    "description": "Dia Shop staff panel.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

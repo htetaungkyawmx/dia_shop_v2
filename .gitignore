@@ -31,3 +31,9 @@ ios/Flutter/flutter_export_environment.sh
 # Secrets and local overrides
 .env
 .env.local
+
+# Deployment secrets and local targets
+deploy/.env
+scripts/deploy.env
+deploy/web/
+deploy/backups/

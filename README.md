@@ -203,5 +203,7 @@ admin does — `TopupService.approve` is the single path that credits a wallet.
 
 ## Further reading
 
+- [`docs/RUN.md`](docs/RUN.md) — running the backend, the web apps, the Android emulator and a real iPhone (မြန်မာလို)
+- [`docs/DEPLOY-VPS.md`](docs/DEPLOY-VPS.md) — putting it on your own VPS with automatic HTTPS (မြန်မာလို)
 - [`docs/API.md`](docs/API.md) — every endpoint, grouped by area
-- [`docs/DEPLOY.md`](docs/DEPLOY.md) — putting it online for free or cheap
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — other hosting options

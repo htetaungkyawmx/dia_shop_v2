@@ -1,0 +1,65 @@
+# Automatic HTTPS for all three hosts. Caddy requests and renews the
+# certificates itself; nothing here needs touching after the first boot.
+{
+	email {$TLS_EMAIL}
+}
+
+# ----------------------------------------------------------------- customer
+{$DOMAIN}, www.{$DOMAIN} {
+	root * /srv/web/shop
+	encode zstd gzip
+
+	# Flutter builds a content-hashed bundle, so assets can be cached hard
+	# while the entry points must always be revalidated.
+	@immutable path /assets/* /canvaskit/* *.wasm
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	@entry path / /index.html /flutter_bootstrap.js /flutter_service_worker.js
+	header @entry Cache-Control "no-cache"
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# Single-page app: unknown paths fall back to the shell, not a 404.
+	try_files {path} /index.html
+	file_server
+}
+
+# -------------------------------------------------------------------- admin
+admin.{$DOMAIN} {
+	root * /srv/web/admin
+	encode zstd gzip
+
+	@immutable path /assets/* /canvaskit/* *.wasm
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# The panel is staff-only; keep it out of search results entirely.
+		X-Robots-Tag "noindex, nofollow"
+		-Server
+	}
+
+	try_files {path} /index.html
+	file_server
+}
+
+# ---------------------------------------------------------------------- api
+api.{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# Uploaded payment screenshots are served straight from the API container.
+	reverse_proxy api:8080
+}
