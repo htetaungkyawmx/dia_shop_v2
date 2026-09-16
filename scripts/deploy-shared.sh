@@ -71,7 +71,9 @@ run "mkdir -p '$APP_DIR' '$WEB_ROOT/shop' '$WEB_ROOT/admin'"
 if run "test -f '$APP_DIR/.env'"; then
   ok "existing $APP_DIR/.env kept"
 else
-  ADMIN_PASSWORD="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 18)9a"
+  # openssl rather than `tr </dev/urandom | head`: under pipefail that pipeline
+  # dies of SIGPIPE and silently aborts the whole script.
+  ADMIN_PASSWORD="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | cut -c1-18)9a"
   run "umask 077 && cat > '$APP_DIR/.env'" <<ENV
 DOMAIN=$DOMAIN
 API_PORT=$API_PORT
