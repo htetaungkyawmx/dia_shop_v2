@@ -21,13 +21,18 @@ class AdminTheme {
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final scheme = ColorScheme.fromSeed(seedColor: brand, brightness: brightness).copyWith(
+    final scheme =
+        ColorScheme.fromSeed(seedColor: brand, brightness: brightness).copyWith(
       surface: isDark ? const Color(0xFF15171F) : Colors.white,
-      surfaceContainerHighest: isDark ? const Color(0xFF1D212C) : const Color(0xFFF1F2F7),
+      surfaceContainerHighest:
+          isDark ? const Color(0xFF1D212C) : const Color(0xFFF1F2F7),
       error: danger,
     );
-    final base = isDark ? ThemeData.dark(useMaterial3: true) : ThemeData.light(useMaterial3: true);
-    final border = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E3EC);
+    final base = isDark
+        ? ThemeData.dark(useMaterial3: true)
+        : ThemeData.light(useMaterial3: true);
+    final border =
+        isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E3EC);
 
     final textTheme = GoogleFonts.interTextTheme(base.textTheme).apply(
       bodyColor: scheme.onSurface,
@@ -37,7 +42,8 @@ class AdminTheme {
 
     return base.copyWith(
       colorScheme: scheme,
-      scaffoldBackgroundColor: isDark ? const Color(0xFF0D0F15) : const Color(0xFFF6F7FB),
+      scaffoldBackgroundColor:
+          isDark ? const Color(0xFF0D0F15) : const Color(0xFFF6F7FB),
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
@@ -46,7 +52,8 @@ class AdminTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        titleTextStyle:
+            textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         shape: Border(bottom: BorderSide(color: border)),
       ),
       cardTheme: CardThemeData(
@@ -64,7 +71,8 @@ class AdminTheme {
         filled: true,
         fillColor: isDark ? const Color(0xFF1D212C) : Colors.white,
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: _inputBorder(border),
         enabledBorder: _inputBorder(border),
         focusedBorder: _inputBorder(scheme.primary, width: 1.5),
@@ -74,7 +82,8 @@ class AdminTheme {
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 44),
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -82,7 +91,8 @@ class AdminTheme {
           minimumSize: const Size(0, 44),
           padding: const EdgeInsets.symmetric(horizontal: 20),
           side: BorderSide(color: border),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
       chipTheme: ChipThemeData(
@@ -99,7 +109,8 @@ class AdminTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: scheme.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
@@ -108,13 +119,15 @@ class AdminTheme {
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: scheme.surface,
         indicatorColor: scheme.primary.withValues(alpha: 0.14),
-        selectedLabelTextStyle: textTheme.labelLarge?.copyWith(color: scheme.primary),
+        selectedLabelTextStyle:
+            textTheme.labelLarge?.copyWith(color: scheme.primary),
         unselectedLabelTextStyle: textTheme.labelMedium,
       ),
     );
   }
 
-  static OutlineInputBorder _inputBorder(Color color, {double width = 1}) => OutlineInputBorder(
+  static OutlineInputBorder _inputBorder(Color color, {double width = 1}) =>
+      OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: color, width: width),
       );

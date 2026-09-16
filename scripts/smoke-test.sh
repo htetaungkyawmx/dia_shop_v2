@@ -63,8 +63,10 @@ echo
 echo "Auth"
 STAMP=$(date +%s)
 EMAIL="smoke+$STAMP@test.local"
-USER_TOKEN=$(curl -s -X POST "$API/auth/register" -H 'Content-Type: application/json' \
-  -d "{\"email\":\"$EMAIL\",\"password\":\"Smoke1234\",\"displayName\":\"Smoke Test\"}" | json accessToken)
+REGISTER=$(curl -s -X POST "$API/auth/register" -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$EMAIL\",\"password\":\"Smoke1234\",\"displayName\":\"Smoke Test\"}")
+USER_TOKEN=$(echo "$REGISTER" | json accessToken)
+USER_REFRESH=$(echo "$REGISTER" | json refreshToken)
 [[ -n "$USER_TOKEN" ]] && { printf '  \033[32m✓\033[0m register\n'; pass=$((pass+1)); } \
                        || { printf '  \033[31m✗\033[0m register\n'; fail=$((fail+1)); }
 
@@ -153,6 +155,24 @@ check "reject order (refund)" 200 -X POST "${AA[@]}" -H 'Content-Type: applicati
 AFTER=$(curl -s "$API/wallet" "${UA[@]}" | json balance)
 [[ "$AFTER" == "50000" ]] && { printf '  \033[32m✓\033[0m refund returned the money (%s)\n' "$AFTER"; pass=$((pass+1)); } \
                           || { printf '  \033[31m✗\033[0m refund returned the money — got %s\n' "$AFTER"; fail=$((fail+1)); }
+
+echo
+echo "Account features"
+check "account stats" 200 "${UA[@]}" "$API/me/stats"
+check "order items carry the product slug (Buy again)" 200 "${UA[@]}" "$API/orders/$ORDER_ID"
+grep -q '"productSlug":"mlbb"' /tmp/smoke-body.json \
+  && { printf '  \033[32m✓\033[0m productSlug present\n'; pass=$((pass+1)); } \
+  || { printf '  \033[31m✗\033[0m productSlug present\n'; fail=$((fail+1)); }
+AVATAR=$(mktemp)
+echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' | base64 -d > "$AVATAR"
+check "profile photo upload" 200 "${UA[@]}" -F "file=@$AVATAR;filename=blob;type=application/octet-stream" "$API/me/photo"
+rm -f "$AVATAR"
+USER_ID=$(curl -s "${AA[@]}" "$API/admin/users?q=$STAMP" | json items 0 id)
+TEMP=$(curl -s -X POST "${AA[@]}" "$API/admin/users/$USER_ID/reset-password" | json temporaryPassword)
+check "old session revoked after reset" 401 -X POST -H 'Content-Type: application/json' \
+  -d "{\"refreshToken\":\"$USER_REFRESH\"}" "$API/auth/refresh"
+check "sign in with the temporary password" 200 -X POST -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$EMAIL\",\"password\":\"$TEMP\"}" "$API/auth/login"
 
 echo
 echo "Validation guards"

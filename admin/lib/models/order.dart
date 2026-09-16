@@ -24,7 +24,8 @@ enum OrderStatus {
         OrderStatus.refunded => 'REFUNDED',
       };
 
-  bool get isOpen => this == OrderStatus.pending || this == OrderStatus.processing;
+  bool get isOpen =>
+      this == OrderStatus.pending || this == OrderStatus.processing;
 
   bool get canCancel => this == OrderStatus.pending;
 }
@@ -58,7 +59,8 @@ class OrderItem {
 
   bool get hasCode => (deliveredCode ?? '').isNotEmpty;
 
-  List<String> get codes => (deliveredCode ?? '').split('\n').where((c) => c.isNotEmpty).toList();
+  List<String> get codes =>
+      (deliveredCode ?? '').split('\n').where((c) => c.isNotEmpty).toList();
 
   factory OrderItem.fromJson(Map<String, dynamic> json) => OrderItem(
         id: (json['id'] as num).toInt(),
@@ -126,8 +128,9 @@ class Order {
         customerNote: json['customerNote'] as String?,
         adminNote: json['adminNote'] as String?,
         rejectReason: json['rejectReason'] as String?,
-        processedAt:
-            json['processedAt'] == null ? null : DateTime.parse(json['processedAt'] as String),
+        processedAt: json['processedAt'] == null
+            ? null
+            : DateTime.parse(json['processedAt'] as String),
         userEmail: json['userEmail'] as String?,
         userName: json['userName'] as String?,
       );

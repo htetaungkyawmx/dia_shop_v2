@@ -34,6 +34,12 @@ class AppTheme {
         end: Alignment.bottomRight,
       );
 
+  static const LinearGradient brandGradientDark = LinearGradient(
+    colors: [Color(0xFF2A2170), Color(0xFF0E1016)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   static LinearGradient get goldGradient => const LinearGradient(
         colors: [Color(0xFFF5B14C), Color(0xFFE08A2E)],
         begin: Alignment.topLeft,
@@ -55,10 +61,13 @@ class AppTheme {
       tertiary: gold,
       error: danger,
       surface: isDark ? _darkSurface : Colors.white,
-      surfaceContainerHighest: isDark ? _darkSurfaceHigh : const Color(0xFFEDEDF5),
+      surfaceContainerHighest:
+          isDark ? _darkSurfaceHigh : const Color(0xFFEDEDF5),
     );
 
-    final base = isDark ? ThemeData.dark(useMaterial3: true) : ThemeData.light(useMaterial3: true);
+    final base = isDark
+        ? ThemeData.dark(useMaterial3: true)
+        : ThemeData.light(useMaterial3: true);
     final textTheme = _textTheme(base.textTheme, scheme);
 
     return base.copyWith(
@@ -74,7 +83,8 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: textTheme.titleLarge,
-        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        systemOverlayStyle:
+            isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       ),
       cardTheme: CardThemeData(
         color: scheme.surface,
@@ -94,8 +104,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? _darkSurfaceHigh : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        hintStyle: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        hintStyle:
+            textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
         border: _inputBorder(_border(scheme, isDark)),
         enabledBorder: _inputBorder(_border(scheme, isDark)),
         focusedBorder: _inputBorder(scheme.primary, width: 1.6),
@@ -105,7 +117,8 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSmall + 2)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusSmall + 2)),
           textStyle: textTheme.labelLarge,
         ),
       ),
@@ -113,7 +126,8 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
           side: BorderSide(color: _border(scheme, isDark)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSmall + 2)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radiusSmall + 2)),
           textStyle: textTheme.labelLarge,
         ),
       ),
@@ -145,14 +159,17 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: scheme.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSmall)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusSmall)),
       ),
       listTileTheme: ListTileThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSmall)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusSmall)),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary),
     );
@@ -161,7 +178,8 @@ class AppTheme {
   static Color _border(ColorScheme scheme, bool isDark) =>
       isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE3E3ED);
 
-  static OutlineInputBorder _inputBorder(Color color, {double width = 1}) => OutlineInputBorder(
+  static OutlineInputBorder _inputBorder(Color color, {double width = 1}) =>
+      OutlineInputBorder(
         borderRadius: BorderRadius.circular(radiusSmall + 2),
         borderSide: BorderSide(color: color, width: width),
       );

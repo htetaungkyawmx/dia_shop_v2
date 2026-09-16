@@ -1,5 +1,6 @@
 package com.diashop.api.service;
 
+import com.diashop.api.dto.AuthDtos.AccountStatsResponse;
 import com.diashop.api.common.ApiException;
 import com.diashop.api.config.AppProperties;
 import com.diashop.api.domain.Device;
@@ -39,6 +40,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final com.diashop.api.repository.OrderRepository orderRepository;
     private final DeviceRepository deviceRepository;
     private final WalletService walletService;
     private final NotificationService notificationService;
@@ -66,7 +68,7 @@ public class AuthService {
 
         walletService.getOrCreate(saved);
         notificationService.notify(saved, NotificationType.GENERAL,
-                "Welcome to Dia Shop",
+                "Welcome to Game Store",
                 "Your account is ready. Top up your wallet to start ordering.",
                 Map.of("screen", "home"));
 
@@ -161,6 +163,27 @@ public class AuthService {
     @Transactional
     public void logoutEverywhere(Long userId) {
         refreshTokenRepository.revokeAllForUser(userId, Instant.now());
+    }
+
+    @Transactional(readOnly = true)
+    public AccountStatsResponse stats(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User"));
+        long spent = 0;
+        long completed = 0;
+        for (Object[] row : orderRepository.spendByUserIds(java.util.List.of(userId))) {
+            completed = ((Number) row[1]).longValue();
+            spent = ((Number) row[2]).longValue();
+        }
+        long open = orderRepository.countByUserIdAndStatusIn(userId,
+                java.util.List.of(com.diashop.api.domain.OrderStatus.PENDING, com.diashop.api.domain.OrderStatus.PROCESSING));
+        return new AccountStatsResponse(spent, completed, open, user.getCreatedAt());
+    }
+
+    @Transactional
+    public UserResponse updatePhoto(Long userId, String photoUrl) {
+        User user = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User"));
+        user.setPhotoUrl(photoUrl);
+        return UserResponse.of(userRepository.save(user), walletService.balanceOf(userId));
     }
 
     @Transactional(readOnly = true)

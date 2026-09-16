@@ -463,6 +463,7 @@ public class OrderService {
                 .map(i -> new OrderItemResponse(
                         i.getId(),
                         i.getVariant().getId(),
+                        i.getVariant().getProduct().getSlug(),
                         i.getProductName(),
                         i.getVariantName(),
                         i.getImageUrl(),

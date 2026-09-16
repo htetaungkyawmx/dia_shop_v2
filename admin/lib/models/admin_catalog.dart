@@ -64,7 +64,8 @@ class AdminProductField {
   final String? validationRegex;
   final int sortOrder;
 
-  factory AdminProductField.fromJson(Map<String, dynamic> json) => AdminProductField(
+  factory AdminProductField.fromJson(Map<String, dynamic> json) =>
+      AdminProductField(
         id: (json['id'] as num?)?.toInt(),
         key: json['key'] as String,
         label: json['label'] as String,
@@ -73,7 +74,8 @@ class AdminProductField {
         labelMy: json['labelMy'] as String?,
         placeholder: json['placeholder'] as String?,
         helpText: json['helpText'] as String?,
-        options: (json['options'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+        options:
+            (json['options'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
         validationRegex: json['validationRegex'] as String?,
       );
 
@@ -212,7 +214,8 @@ class AdminProduct {
   final String? instructions;
   final String? instructionsMy;
 
-  int get lowStockCount => variants.where((v) => v.active && v.isLowStock).length;
+  int get lowStockCount =>
+      variants.where((v) => v.active && v.isLowStock).length;
 
   factory AdminProduct.fromJson(Map<String, dynamic> json) => AdminProduct(
         id: (json['id'] as num).toInt(),
@@ -293,8 +296,9 @@ class StockCode {
         codeMasked: json['codeMasked'] as String? ?? '••••',
         status: json['status'] as String? ?? 'AVAILABLE',
         createdAt: DateTime.parse(json['createdAt'] as String),
-        assignedAt:
-            json['assignedAt'] == null ? null : DateTime.parse(json['assignedAt'] as String),
+        assignedAt: json['assignedAt'] == null
+            ? null
+            : DateTime.parse(json['assignedAt'] as String),
       );
 }
 
@@ -345,7 +349,8 @@ class AdminUser {
         createdAt: DateTime.parse(json['createdAt'] as String),
         phone: json['phone'] as String?,
         photoUrl: json['photoUrl'] as String?,
-        lastLoginAt:
-            json['lastLoginAt'] == null ? null : DateTime.parse(json['lastLoginAt'] as String),
+        lastLoginAt: json['lastLoginAt'] == null
+            ? null
+            : DateTime.parse(json['lastLoginAt'] as String),
       );
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../l10n/strings.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 import '../auth/auth_scaffold.dart';
 
 class ChangePasswordPage extends ConsumerStatefulWidget {
@@ -52,8 +53,8 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
   @override
   Widget build(BuildContext context) {
     final strings = Strings.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.changePassword)),
+    return AppPage(
+      title: strings.changePassword,
       body: MaxWidthBody(
         maxWidth: 520,
         child: Form(
@@ -65,7 +66,8 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
                 controller: _current,
                 obscureText: true,
                 decoration: InputDecoration(labelText: strings.currentPassword),
-                validator: (value) => AuthValidators.notEmpty(value, strings.passwordRequired),
+                validator: (value) =>
+                    AuthValidators.notEmpty(value, strings.passwordRequired),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -76,15 +78,17 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
                   helperText: strings.passwordRule,
                   helperMaxLines: 2,
                 ),
-                validator: (value) =>
-                    AuthValidators.password(value, strings.passwordRequired, strings.passwordRule),
+                validator: (value) => AuthValidators.password(
+                    value, strings.passwordRequired, strings.passwordRule),
               ),
               const SizedBox(height: 26),
               FilledButton(
                 onPressed: _busy ? null : _save,
                 child: _busy
                     ? const SizedBox(
-                        width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : Text(strings.save),
               ),
             ],

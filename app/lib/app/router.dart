@@ -18,6 +18,7 @@ import '../features/profile/edit_profile_page.dart';
 import '../features/profile/profile_page.dart';
 import '../features/shell/app_shell.dart';
 import '../features/shell/splash_page.dart';
+import '../features/support/faq_page.dart';
 import '../features/support/support_page.dart';
 import '../features/wallet/topup_page.dart';
 import '../features/wallet/wallet_page.dart';
@@ -26,8 +27,14 @@ import '../providers/providers.dart';
 final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 /// Routes a signed-out visitor may open. Everything else redirects to sign-in.
-const _publicPrefixes = <String>['/login', '/register', '/shop', '/product', '/search'];
-
+const _publicPrefixes = <String>[
+  '/faq',
+  '/login',
+  '/register',
+  '/shop',
+  '/product',
+  '/search'
+];
 
 /// Re-runs the redirect when the session changes.
 ///
@@ -38,6 +45,19 @@ class _AuthRefresh extends ChangeNotifier {
   _AuthRefresh(Ref ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
   }
+}
+
+/// Only follow in-app paths from ?from=, never an absolute URL someone crafted.
+String _safeReturn(String? from) {
+  if (from == null || !from.startsWith('/') || from.startsWith('//')) {
+    return '/';
+  }
+  if (from.startsWith('/splash') ||
+      from.startsWith('/login') ||
+      from.startsWith('/register')) {
+    return '/';
+  }
+  return from;
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -51,32 +71,47 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final auth = ref.read(authProvider);
-      // Hold on the splash until the first auth check finishes, otherwise a
-      // signed-in user briefly lands on the login screen on a cold start.
-      if (auth.isLoading) return state.matchedLocation == '/splash' ? null : '/splash';
+      final location = state.matchedLocation;
+      final from = state.uri.queryParameters['from'];
+
+      // Only the very first session check (no value yet) holds on the splash.
+      // The requested address rides along in ?from= so a shared link or a
+      // page refresh lands where it pointed instead of on the home page.
+      if (auth.isLoading && !auth.hasValue) {
+        if (location == '/splash') return null;
+        return Uri(
+            path: '/splash',
+            queryParameters: {'from': state.uri.toString()}).toString();
+      }
+      if (location == '/splash') return _safeReturn(from);
 
       final signedIn = auth.value != null;
-      final location = state.matchedLocation;
       final isPublic = location == '/' ||
           _publicPrefixes.any((prefix) => location.startsWith(prefix));
 
-      if (!signedIn && !isPublic) return '/login';
-      if (signedIn && (location == '/login' || location == '/register' || location == '/splash')) {
-        return '/';
+      if (!signedIn && !isPublic) {
+        return Uri(
+            path: '/login',
+            queryParameters: {'from': state.uri.toString()}).toString();
       }
-      if (location == '/splash') return '/';
+      if (signedIn && (location == '/login' || location == '/register')) {
+        return _safeReturn(from);
+      }
       return null;
     },
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
-      GoRoute(path: '/register', builder: (context, state) => const RegisterPage()),
+      GoRoute(
+          path: '/register', builder: (context, state) => const RegisterPage()),
       GoRoute(
         path: '/product/:slug',
-        builder: (context, state) => ProductPage(slug: state.pathParameters['slug']!),
+        builder: (context, state) =>
+            ProductPage(slug: state.pathParameters['slug']!),
       ),
       GoRoute(path: '/search', builder: (context, state) => const SearchPage()),
-      GoRoute(path: '/checkout', builder: (context, state) => const CheckoutPage()),
+      GoRoute(
+          path: '/checkout', builder: (context, state) => const CheckoutPage()),
       GoRoute(
         path: '/order-success/:id',
         builder: (context, state) =>
@@ -87,14 +122,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             OrderDetailPage(orderId: int.parse(state.pathParameters['id']!)),
       ),
-      GoRoute(path: '/wallet/topup', builder: (context, state) => const TopupPage()),
-      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsPage()),
-      GoRoute(path: '/support', builder: (context, state) => const SupportPage()),
-      GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfilePage()),
-      GoRoute(path: '/profile/password', builder: (context, state) => const ChangePasswordPage()),
-
+      GoRoute(
+          path: '/wallet/topup',
+          builder: (context, state) => const TopupPage()),
+      GoRoute(
+          path: '/notifications',
+          builder: (context, state) => const NotificationsPage()),
+      GoRoute(
+          path: '/support', builder: (context, state) => const SupportPage()),
+      GoRoute(path: '/faq', builder: (context, state) => const FaqPage()),
+      GoRoute(
+          path: '/profile/edit',
+          builder: (context, state) => const EditProfilePage()),
+      GoRoute(
+          path: '/profile/password',
+          builder: (context, state) => const ChangePasswordPage()),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) =>
+            AppShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(path: '/', builder: (context, state) => const HomePage()),
@@ -102,18 +147,24 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/shop',
-              builder: (context, state) =>
-                  ShopPage(initialCategory: state.uri.queryParameters['category']),
+              builder: (context, state) => ShopPage(
+                  initialCategory: state.uri.queryParameters['category']),
             ),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/orders', builder: (context, state) => const OrdersPage()),
+            GoRoute(
+                path: '/orders',
+                builder: (context, state) => const OrdersPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/wallet', builder: (context, state) => const WalletPage()),
+            GoRoute(
+                path: '/wallet',
+                builder: (context, state) => const WalletPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/profile', builder: (context, state) => const ProfilePage()),
+            GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfilePage()),
           ]),
         ],
       ),

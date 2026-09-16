@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Dia Shop Admin"
+        android:label="Game Store Admin"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

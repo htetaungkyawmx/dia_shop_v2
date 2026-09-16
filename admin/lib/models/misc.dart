@@ -19,7 +19,8 @@ class AppNotification {
   final DateTime createdAt;
   final Map<String, String> data;
 
-  factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
+  factory AppNotification.fromJson(Map<String, dynamic> json) =>
+      AppNotification(
         id: (json['id'] as num).toInt(),
         title: json['title'] as String,
         body: json['body'] as String,
@@ -66,7 +67,9 @@ class SupportTicket {
         status: json['status'] as String? ?? 'OPEN',
         createdAt: DateTime.parse(json['createdAt'] as String),
         adminReply: json['adminReply'] as String?,
-        repliedAt: json['repliedAt'] == null ? null : DateTime.parse(json['repliedAt'] as String),
+        repliedAt: json['repliedAt'] == null
+            ? null
+            : DateTime.parse(json['repliedAt'] as String),
         orderNo: json['orderNo'] as String?,
         userEmail: json['userEmail'] as String?,
         userName: json['userName'] as String?,
@@ -91,7 +94,7 @@ class AppConfig {
   final Map<String, String> support;
 
   static const fallback = AppConfig(
-    appName: 'Dia Shop',
+    appName: 'Game Store',
     maintenance: false,
     maintenanceMessage: '',
     topupMinAmount: 1000,
@@ -100,7 +103,7 @@ class AppConfig {
   );
 
   factory AppConfig.fromJson(Map<String, dynamic> json) => AppConfig(
-        appName: json['appName'] as String? ?? 'Dia Shop',
+        appName: json['appName'] as String? ?? 'Game Store',
         maintenance: json['maintenance'] as bool? ?? false,
         maintenanceMessage: json['maintenanceMessage'] as String? ?? '',
         topupMinAmount: (json['topupMinAmount'] as num?)?.toInt() ?? 1000,
@@ -141,6 +144,6 @@ class Paged<T> {
     );
   }
 
-  static Paged<T> empty<T>() =>
-      Paged<T>(items: const [], page: 0, totalItems: 0, totalPages: 0, hasNext: false);
+  static Paged<T> empty<T>() => Paged<T>(
+      items: const [], page: 0, totalItems: 0, totalPages: 0, hasNext: false);
 }

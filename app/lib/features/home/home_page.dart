@@ -5,254 +5,956 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
+import '../../core/format.dart';
 import '../../l10n/strings.dart';
 import '../../models/catalog.dart' as catalog;
+import '../../models/order.dart';
 import '../../providers/providers.dart';
 import '../../widgets/catalog_widgets.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
+import '../orders/order_status_ui.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final strings = Strings.of(context);
     final home = ref.watch(homeProvider);
+    final wide = Breakpoints.isWide(context);
 
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(homeProvider);
-            ref.invalidate(walletProvider);
-            ref.invalidate(unreadCountProvider);
-            await ref.read(homeProvider.future);
-          },
-          child: MaxWidthBody(
-            maxWidth: 900,
-            child: home.when(
-              loading: () => const _HomeSkeleton(),
-              error: (error, _) => ListView(
-                children: [
-                  const SizedBox(height: 120),
-                  ErrorView(error: error, onRetry: () => ref.invalidate(homeProvider)),
-                ],
-              ),
-              data: (data) => _HomeContent(data: data, strings: strings),
+    Future<void> refresh() async {
+      ref.invalidate(homeProvider);
+      ref.invalidate(walletProvider);
+      ref.invalidate(unreadCountProvider);
+      ref.invalidate(ordersProvider);
+      await ref.read(homeProvider.future);
+    }
+
+    final content = home.when(
+      loading: () => const _HomeSkeleton(),
+      error: (error, _) => ListView(
+        children: [
+          const SizedBox(height: 120),
+          ErrorView(error: error, onRetry: () => ref.invalidate(homeProvider)),
+        ],
+      ),
+      data: (data) =>
+          RefreshIndicator(onRefresh: refresh, child: _HomeContent(data: data)),
+    );
+
+    if (wide) {
+      return Scaffold(
+          body:
+              Column(children: [const WebHeader(), Expanded(child: content)]));
+    }
+    return Scaffold(body: SafeArea(bottom: false, child: content));
+  }
+}
+
+class _HomeContent extends ConsumerWidget {
+  const _HomeContent({required this.data});
+
+  final catalog.HomeData data;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = Strings.of(context);
+    final wide = Breakpoints.isWide(context);
+    final gap = wide ? 48.0 : 28.0;
+
+    final games =
+        data.featured.where((p) => p.categorySlug == 'mobile-games').toList();
+    final others =
+        data.featured.where((p) => p.categorySlug != 'mobile-games').toList();
+
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        if (!wide)
+          const PageContainer(
+            child: Padding(
+                padding: EdgeInsets.only(top: 8), child: _MobileTopBar()),
+          ),
+        if (data.maintenance)
+          PageContainer(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: _MaintenanceBanner(
+                  title: strings.maintenanceTitle,
+                  message: data.maintenanceMessage),
             ),
           ),
+        SizedBox(height: wide ? 28 : 16),
+        PageContainer(child: _Hero(banners: data.banners)),
+        SizedBox(height: wide ? 28 : 20),
+        if (data.categories.isNotEmpty)
+          PageContainer(child: _CategoryStrip(categories: data.categories)),
+        const _RecentOrders(),
+        if (games.isNotEmpty) ...[
+          SizedBox(height: gap),
+          PageContainer(
+            child: WebSectionTitle(
+              title: strings.popularGames,
+              action: TextButton(
+                onPressed: () => context.go('/shop?category=mobile-games'),
+                child: Text(strings.viewAll),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          PageContainer(child: _GameGrid(products: games)),
+        ],
+        if (others.isNotEmpty) ...[
+          SizedBox(height: gap),
+          PageContainer(
+            child: WebSectionTitle(
+              title: strings.giftCardsAndApps,
+              action: TextButton(
+                  onPressed: () => context.go('/shop'),
+                  child: Text(strings.viewAll)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          PageContainer(child: _GameGrid(products: others)),
+        ],
+        if (data.featured.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 40),
+            child: EmptyView(
+              icon: Icons.inventory_2_outlined,
+              title: strings.noProducts,
+              message: strings.noProductsBody,
+            ),
+          ),
+        SizedBox(height: gap),
+        const PageContainer(child: _WhyUs()),
+        SizedBox(height: gap),
+        const PageContainer(child: _HowToBuy()),
+        if (wide) const SiteFooter() else const SizedBox(height: 32),
+      ],
+    );
+  }
+}
+
+// ------------------------------------------------------------------ mobile top
+
+class _MobileTopBar extends ConsumerWidget {
+  const _MobileTopBar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final strings = Strings.of(context);
+    final user = ref.watch(authProvider).value;
+    final balance =
+        ref.watch(walletProvider).value?.balance ?? user?.balance ?? 0;
+    final unread = ref.watch(unreadCountProvider).value ?? 0;
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            const AppLogo(size: 42),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user == null
+                        ? strings.appName
+                        : (strings.isBurmese ? 'မင်္ဂလာပါ' : 'Hello'),
+                    style: user == null
+                        ? theme.textTheme.titleMedium
+                        : theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  if (user != null)
+                    Text(
+                      user.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                ],
+              ),
+            ),
+            if (user != null) ...[
+              BalancePill(
+                  balance: balance, onTap: () => context.push('/wallet/topup')),
+              IconButton(
+                onPressed: () => context.push('/notifications'),
+                icon: unread > 0
+                    ? Badge(
+                        label: Text(unread > 99 ? '99+' : '$unread'),
+                        child: const Icon(Icons.notifications_none_rounded),
+                      )
+                    : const Icon(Icons.notifications_none_rounded),
+              ),
+            ] else
+              FilledButton(
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                onPressed: () => pushLogin(context),
+                child: Text(strings.signIn),
+              ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        InkWell(
+          onTap: () => context.push('/search'),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall + 2),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall + 2),
+              border: Border.all(color: theme.dividerColor),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search_rounded,
+                    size: 20, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    strings.searchHint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ------------------------------------------------------------------------ hero
+
+class _Hero extends StatelessWidget {
+  const _Hero({required this.banners});
+
+  final List<catalog.Banner> banners;
+
+  @override
+  Widget build(BuildContext context) {
+    final wide = Breakpoints.isWide(context);
+    final carousel = banners.isEmpty
+        ? const _WelcomeBanner()
+        : _BannerCarousel(banners: banners, height: wide ? 340 : 170);
+
+    if (!wide) return carousel;
+
+    // On a wide screen the hero shares its row with the visitor's wallet (or a
+    // sign-up prompt), so the first thing they see is both an offer and an action.
+    return SizedBox(
+      height: 340,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(flex: 7, child: carousel),
+          const SizedBox(width: 20),
+          const Expanded(flex: 3, child: _HeroSidePanel()),
+        ],
+      ),
+    );
+  }
+}
+
+class _WelcomeBanner extends StatelessWidget {
+  const _WelcomeBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final strings = Strings.of(context);
+    return Container(
+      height: Breakpoints.isWide(context) ? 340 : 170,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: AppTheme.brandGradient,
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(strings.appName,
+                    style: theme.textTheme.headlineSmall
+                        ?.copyWith(color: Colors.white)),
+                const SizedBox(height: 8),
+                Text(strings.tagline,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: Colors.white70)),
+              ],
+            ),
+          ),
+          const AppLogo(size: 110),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroSidePanel extends ConsumerWidget {
+  const _HeroSidePanel();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final strings = Strings.of(context);
+    final user = ref.watch(authProvider).value;
+    final wallet = ref.watch(walletProvider).value;
+    const onDark = Colors.white;
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2A2170), Color(0xFF12111F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const AppLogo(size: 46),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  user == null ? strings.appName : user.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(color: onDark),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          if (user == null) ...[
+            Text(
+              strings.tagline,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: Colors.white70, height: 1.5),
+            ),
+            const SizedBox(height: 18),
+            FilledButton(
+                onPressed: () => pushLogin(context, register: true),
+                child: Text(strings.signUp)),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: onDark,
+                side: const BorderSide(color: Colors.white24),
+              ),
+              onPressed: () => pushLogin(context),
+              child: Text(strings.signIn),
+            ),
+          ] else ...[
+            Text(strings.availableBalance,
+                style:
+                    theme.textTheme.bodySmall?.copyWith(color: Colors.white60)),
+            const SizedBox(height: 4),
+            Text(
+              Format.money(wallet?.balance ?? user.balance),
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(color: onDark, fontWeight: FontWeight.w800),
+            ),
+            if ((wallet?.pendingTopupAmount ?? 0) > 0)
+              Text(
+                '${strings.pendingTopup}: ${Format.money(wallet!.pendingTopupAmount)}',
+                style:
+                    theme.textTheme.bodySmall?.copyWith(color: AppTheme.gold),
+              ),
+            const SizedBox(height: 18),
+            FilledButton.icon(
+              onPressed: () => context.push('/wallet/topup'),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: Text(strings.topUp),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: onDark,
+                side: const BorderSide(color: Colors.white24),
+              ),
+              onPressed: () => context.go('/orders'),
+              child: Text(strings.myOrders),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BannerCarousel extends StatefulWidget {
+  const _BannerCarousel({required this.banners, required this.height});
+
+  final List<catalog.Banner> banners;
+  final double height;
+
+  @override
+  State<_BannerCarousel> createState() => _BannerCarouselState();
+}
+
+class _BannerCarouselState extends State<_BannerCarousel> {
+  final _controller = PageController();
+  Timer? _timer;
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.banners.length > 1) {
+      _timer =
+          Timer.periodic(const Duration(seconds: 6), (_) => _go(_index + 1));
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _go(int index) {
+    if (!mounted || !_controller.hasClients) return;
+    _controller.animateToPage(
+      index % widget.banners.length,
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _open(catalog.Banner banner) {
+    switch (banner.linkType) {
+      case 'PRODUCT':
+        if (banner.linkValue != null) {
+          context.push('/product/${banner.linkValue}');
+        }
+      case 'CATEGORY':
+        if (banner.linkValue != null) {
+          context.go('/shop?category=${banner.linkValue}');
+        }
+      default:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final many = widget.banners.length > 1;
+    final large = widget.height > 200;
+
+    return SizedBox(
+      height: widget.height,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            PageView.builder(
+              controller: _controller,
+              onPageChanged: (index) => setState(() => _index = index),
+              itemCount: widget.banners.length,
+              itemBuilder: (context, index) {
+                final banner = widget.banners[index];
+                return GestureDetector(
+                  onTap: () => _open(banner),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      AppImage(
+                          url: banner.imageUrl,
+                          radius: 0,
+                          fallbackIcon: Icons.campaign_rounded),
+                      if ((banner.title ?? '').isNotEmpty)
+                        DecoratedBox(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomLeft,
+                              end: Alignment.topRight,
+                              colors: [Color(0xCC000000), Colors.transparent],
+                              stops: [0, 0.55],
+                            ),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(
+                                large ? 32 : 18, 0, 80, large ? 30 : 16),
+                            child: Align(
+                              alignment: Alignment.bottomLeft,
+                              child: Text(
+                                banner.title!,
+                                maxLines: 2,
+                                style: (large
+                                        ? theme.textTheme.headlineSmall
+                                        : theme.textTheme.titleMedium)
+                                    ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w800),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            if (many && large) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _ArrowButton(
+                  icon: Icons.chevron_left_rounded,
+                  onTap: () => _go(_index - 1 + widget.banners.length),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: _ArrowButton(
+                    icon: Icons.chevron_right_rounded,
+                    onTap: () => _go(_index + 1)),
+              ),
+            ],
+            if (many)
+              Positioned(
+                right: 18,
+                bottom: 14,
+                child: Row(
+                  children: [
+                    for (var i = 0; i < widget.banners.length; i++)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: i == _index ? 20 : 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: i == _index ? Colors.white : Colors.white54,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _HomeContent extends ConsumerWidget {
-  const _HomeContent({required this.data, required this.strings});
+class _ArrowButton extends StatelessWidget {
+  const _ArrowButton({required this.icon, required this.onTap});
 
-  final catalog.HomeData data;
-  final Strings strings;
+  final IconData icon;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authProvider).value;
-    final balance = ref.watch(walletProvider).value?.balance ?? user?.balance ?? 0;
-
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: _Greeting(name: user?.displayName, balance: balance),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: _SearchBar(hint: strings.searchHint, onTap: () => context.push('/search')),
-          ),
-        ),
-        if (data.maintenance)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: _MaintenanceBanner(
-                title: strings.maintenanceTitle,
-                message: data.maintenanceMessage,
-              ),
-            ),
-          ),
-        if (data.banners.isNotEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 18),
-              child: _BannerCarousel(banners: data.banners),
-            ),
-          ),
-        if (data.categories.isNotEmpty) ...[
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 10),
-              child: SectionHeader(title: strings.categories),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 44,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: data.categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final category = data.categories[index];
-                  return CategoryPill(
-                    label: category.localisedName(strings.isBurmese),
-                    selected: false,
-                    icon: _iconFor(category.slug),
-                    onTap: () => context.push('/shop?category=${category.slug}'),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 26, 16, 12),
-            child: SectionHeader(
-              title: strings.featured,
-              actionLabel: strings.seeAll,
-              onAction: () => context.push('/shop'),
-            ),
-          ),
-        ),
-        if (data.featured.isEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 40),
-              child: EmptyView(
-                icon: Icons.inventory_2_outlined,
-                title: strings.noProducts,
-                message: strings.noProductsBody,
-              ),
-            ),
-          )
-        else
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-            sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 220,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                // Room for a two-line Burmese name; the image flexes to fill the rest.
-                mainAxisExtent: 236,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final product = data.featured[index];
-                  return ProductCard(
-                    product: product,
-                    onTap: () => context.push('/product/${product.slug}'),
-                  );
-                },
-                childCount: data.featured.length,
-              ),
-            ),
-          ),
-      ],
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Material(
+        color: Colors.black45,
+        shape: const CircleBorder(),
+        child:
+            IconButton(onPressed: onTap, icon: Icon(icon, color: Colors.white)),
+      ),
     );
   }
+}
 
-  static IconData _iconFor(String slug) => switch (slug) {
+// ------------------------------------------------------------------ categories
+
+class _CategoryStrip extends StatelessWidget {
+  const _CategoryStrip({required this.categories});
+
+  final List<catalog.Category> categories;
+
+  static IconData iconFor(String slug) => switch (slug) {
         'mobile-games' => Icons.sports_esports_rounded,
         'gift-cards' => Icons.card_giftcard_rounded,
         'premium-apps' => Icons.workspace_premium_rounded,
         'vouchers' => Icons.confirmation_num_rounded,
         _ => Icons.category_rounded,
       };
-}
-
-class _Greeting extends ConsumerWidget {
-  const _Greeting({required this.name, required this.balance});
-
-  final String? name;
-  final int balance;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final strings = Strings.of(context);
-    final unread = ref.watch(unreadCountProvider).value ?? 0;
+    final wide = Breakpoints.isWide(context);
 
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    Widget tile(catalog.Category category, int index) {
+      final color = accentFor(index);
+      return InkWell(
+        onTap: () => context.go('/shop?category=${category.slug}'),
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+        child: Ink(
+          padding: EdgeInsets.all(wide ? 18 : 12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radius),
+            border: Border.all(color: theme.dividerColor),
+          ),
+          child: Row(
             children: [
-              Text(
-                strings.isBurmese ? 'မင်္ဂလာပါ' : 'Hello',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              Container(
+                width: wide ? 46 : 38,
+                height: wide ? 46 : 38,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(iconFor(category.slug),
+                    color: color, size: wide ? 24 : 20),
               ),
-              Text(
-                name ?? strings.appName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleLarge,
+              const SizedBox(width: 12),
+              Flexible(
+                fit: wide ? FlexFit.tight : FlexFit.loose,
+                child: Text(
+                  category.localisedName(strings.isBurmese),
+                  maxLines: wide ? 2 : 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: (wide
+                          ? theme.textTheme.titleSmall
+                          : theme.textTheme.labelLarge)
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
               ),
             ],
           ),
         ),
-        BalancePill(balance: balance, onTap: () => context.push('/wallet/topup')),
-        const SizedBox(width: 4),
-        IconButton(
-          onPressed: () => context.push('/notifications'),
-          icon: unread > 0
-              ? Badge(
-                  label: Text(unread > 99 ? '99+' : '$unread'),
-                  child: const Icon(Icons.notifications_none_rounded),
-                )
-              : const Icon(Icons.notifications_none_rounded),
+      );
+    }
+
+    if (!wide) {
+      // Burmese category names wrap mid-word in narrow tiles, so phones get a
+      // single scrolling row where every label stays on one line.
+      return SizedBox(
+        height: 56,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: categories.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, i) => tile(categories[i], i),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 12.0;
+        final width = (constraints.maxWidth - spacing * 3) / 4;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (var i = 0; i < categories.length; i++)
+              SizedBox(width: width, child: tile(categories[i], i)),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ----------------------------------------------------------------------- grids
+
+class _GameGrid extends StatelessWidget {
+  const _GameGrid({required this.products});
+
+  final List<catalog.ProductSummary> products;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 1100
+            ? 6
+            : width >= 800
+                ? 5
+                : width >= 620
+                    ? 4
+                    : width >= 480
+                        ? 3
+                        : 2;
+        final spacing = width >= 800 ? 18.0 : 10.0;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+            childAspectRatio: GameCard.aspectRatio,
+          ),
+          itemCount: products.length,
+          itemBuilder: (context, index) => GameCard(
+            product: products[index],
+            onTap: () => context.push('/product/${products[index].slug}'),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// -------------------------------------------------------------- recent orders
+
+class _RecentOrders extends ConsumerWidget {
+  const _RecentOrders();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(isSignedInProvider)) return const SizedBox.shrink();
+    final orders =
+        ref.watch(ordersProvider(null)).value?.items ?? const <Order>[];
+    if (orders.isEmpty) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final strings = Strings.of(context);
+    final wide = Breakpoints.isWide(context);
+    final recent = orders.take(wide ? 3 : 2).toList();
+
+    return Padding(
+      padding: EdgeInsets.only(top: wide ? 40 : 24),
+      child: PageContainer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            WebSectionTitle(
+              title: strings.recentOrders,
+              action: TextButton(
+                  onPressed: () => context.go('/orders'),
+                  child: Text(strings.viewAll)),
+            ),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 900 ? 3 : 1;
+                final width =
+                    (constraints.maxWidth - 12 * (columns - 1)) / columns;
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 10,
+                  children: [
+                    for (final order in recent)
+                      SizedBox(
+                        width: width,
+                        child: Card(
+                          child: ListTile(
+                            onTap: () => context.push('/orders/${order.id}'),
+                            leading: AppImage(
+                              url: order.items.isEmpty
+                                  ? null
+                                  : order.items.first.imageUrl,
+                              width: 44,
+                              height: 44,
+                              fallbackIcon: Icons.receipt_long_rounded,
+                            ),
+                            title: Text(order.title,
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                            subtitle: Text(
+                              '${Format.money(order.total)} · ${Format.relative(order.createdAt)}',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                            trailing: StatusChip(
+                              label: OrderStatusUi.label(order.status, strings),
+                              color: OrderStatusUi.color(order.status),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --------------------------------------------------------------- trust + steps
+
+class _WhyUs extends StatelessWidget {
+  const _WhyUs();
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = Strings.of(context);
+    final items = [
+      (
+        Icons.bolt_rounded,
+        strings.featureInstantTitle,
+        strings.featureInstantBody
+      ),
+      (
+        Icons.verified_user_rounded,
+        strings.featureSecureTitle,
+        strings.featureSecureBody
+      ),
+      (
+        Icons.support_agent_rounded,
+        strings.featureSupportTitle,
+        strings.featureSupportBody
+      ),
+      (
+        Icons.local_offer_rounded,
+        strings.featurePriceTitle,
+        strings.featurePriceBody
+      ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        WebSectionTitle(title: strings.whyChooseUs),
+        const SizedBox(height: 16),
+        _ResponsiveTiles(
+          children: [
+            for (var i = 0; i < items.length; i++)
+              _InfoTile(
+                  icon: items[i].$1,
+                  title: items[i].$2,
+                  body: items[i].$3,
+                  color: accentFor(i)),
+          ],
         ),
       ],
     );
   }
 }
 
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({required this.hint, required this.onTap});
+class _HowToBuy extends StatelessWidget {
+  const _HowToBuy();
 
-  final String hint;
-  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    final strings = Strings.of(context);
+    final steps = [
+      (
+        Icons.account_balance_wallet_rounded,
+        strings.stepTopUpTitle,
+        strings.stepTopUpBody
+      ),
+      (
+        Icons.touch_app_rounded,
+        strings.stepChooseTitle,
+        strings.stepChooseBody
+      ),
+      (Icons.badge_rounded, strings.stepIdTitle, strings.stepIdBody),
+      (Icons.celebration_rounded, strings.stepDoneTitle, strings.stepDoneBody),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        WebSectionTitle(title: strings.howToBuy),
+        const SizedBox(height: 16),
+        _ResponsiveTiles(
+          children: [
+            for (var i = 0; i < steps.length; i++)
+              _InfoTile(
+                icon: steps[i].$1,
+                title: '${i + 1}. ${steps[i].$2}',
+                body: steps[i].$3,
+                color: AppTheme.brand,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ResponsiveTiles extends StatelessWidget {
+  const _ResponsiveTiles({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 900 ? 4 : 2;
+        const spacing = 12.0;
+        final width =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final child in children) SizedBox(width: width, child: child)
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile(
+      {required this.icon,
+      required this.title,
+      required this.body,
+      required this.color});
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppTheme.radiusSmall + 2),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusSmall + 2),
-          border: Border.all(color: theme.dividerColor),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.search_rounded, size: 20, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 10),
-            Text(
-              hint,
-              style:
-                  theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
-          ],
-        ),
+    // No fixed height: Burmese copy wraps to more lines than English, and a
+    // fixed box would clip it. Tiles in a row may differ slightly in height.
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(height: 12),
+          Text(title,
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(
+            body,
+            style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant, height: 1.5),
+          ),
+        ],
       ),
     );
   }
@@ -284,7 +986,8 @@ class _MaintenanceBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: theme.textTheme.titleSmall?.copyWith(color: AppTheme.warning)),
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(color: AppTheme.warning)),
                 if (message.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(message, style: theme.textTheme.bodySmall),
@@ -298,138 +1001,30 @@ class _MaintenanceBanner extends StatelessWidget {
   }
 }
 
-class _BannerCarousel extends StatefulWidget {
-  const _BannerCarousel({required this.banners});
-
-  final List<catalog.Banner> banners;
-
-  @override
-  State<_BannerCarousel> createState() => _BannerCarouselState();
-}
-
-class _BannerCarouselState extends State<_BannerCarousel> {
-  late final PageController _controller = PageController(viewportFraction: 0.9);
-  Timer? _timer;
-  int _index = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.banners.length > 1) {
-      _timer = Timer.periodic(const Duration(seconds: 5), (_) {
-        if (!mounted || !_controller.hasClients) return;
-        final next = (_index + 1) % widget.banners.length;
-        _controller.animateToPage(
-          next,
-          duration: const Duration(milliseconds: 420),
-          curve: Curves.easeOutCubic,
-        );
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _open(catalog.Banner banner) {
-    switch (banner.linkType) {
-      case 'PRODUCT':
-        if (banner.linkValue != null) context.push('/product/${banner.linkValue}');
-      case 'CATEGORY':
-        if (banner.linkValue != null) context.push('/shop?category=${banner.linkValue}');
-      default:
-        break;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 156,
-          child: PageView.builder(
-            controller: _controller,
-            onPageChanged: (index) => setState(() => _index = index),
-            itemCount: widget.banners.length,
-            itemBuilder: (context, index) {
-              final banner = widget.banners[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: GestureDetector(
-                  onTap: () => _open(banner),
-                  child: AppImage(
-                    url: banner.imageUrl,
-                    radius: AppTheme.radius,
-                    fallbackIcon: Icons.campaign_rounded,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        if (widget.banners.length > 1) ...[
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 0; i < widget.banners.length; i++)
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: i == _index ? 18 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: i == _index
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).dividerColor,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ],
-    );
-  }
-}
-
 class _HomeSkeleton extends StatelessWidget {
   const _HomeSkeleton();
 
   @override
   Widget build(BuildContext context) {
+    final wide = Breakpoints.isWide(context);
     return ListView(
-      padding: const EdgeInsets.all(16),
       children: [
-        const ShimmerBox(height: 48),
         const SizedBox(height: 16),
-        const ShimmerBox(height: 52),
-        const SizedBox(height: 18),
-        const ShimmerBox(height: 156, radius: AppTheme.radius),
+        PageContainer(
+            child:
+                ShimmerBox(height: wide ? 340 : 170, radius: AppTheme.radius)),
         const SizedBox(height: 24),
-        Row(
-          children: List.generate(
-            3,
-            (_) => const Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: ShimmerBox(width: 96, height: 40, radius: 999),
-            ),
+        PageContainer(
+          child: GridView.count(
+            crossAxisCount: wide ? 6 : 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: GameCard.aspectRatio,
+            children: List.generate(
+                6, (_) => const ShimmerBox(radius: AppTheme.radius)),
           ),
-        ),
-        const SizedBox(height: 24),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.92,
-          children: List.generate(4, (_) => const ShimmerBox(radius: AppTheme.radius)),
         ),
       ],
     );

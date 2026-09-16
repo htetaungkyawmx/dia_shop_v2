@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../l10n/strings.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../support/faq_page.dart';
 import 'auth_scaffold.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -38,7 +39,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           );
       final auth = ref.read(authProvider);
       if (auth.hasError) throw auth.error!;
-      if (mounted) context.go('/');
+      // The router redirects to wherever the visitor came from.
     } catch (error) {
       if (mounted) AppSnack.error(context, error);
     } finally {
@@ -67,8 +68,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   labelText: strings.email,
                   prefixIcon: const Icon(Icons.alternate_email_rounded),
                 ),
-                validator: (value) =>
-                    AuthValidators.email(value, strings.emailRequired, strings.emailInvalid),
+                validator: (value) => AuthValidators.email(
+                    value, strings.emailRequired, strings.emailInvalid),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -90,6 +91,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 validator: (value) =>
                     AuthValidators.notEmpty(value, strings.passwordRequired),
               ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => showForgotPassword(context),
+                  child: Text(strings.forgotPassword),
+                ),
+              ),
             ],
           ),
         ),
@@ -98,7 +106,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           onPressed: _busy ? null : _submit,
           child: _busy
               ? const SizedBox(
-                  width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2))
               : Text(strings.signIn),
         ),
       ],

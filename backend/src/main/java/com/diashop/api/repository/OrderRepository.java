@@ -45,6 +45,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     long countByStatus(OrderStatus status);
 
+    long countByUserIdAndStatusIn(Long userId, java.util.Collection<OrderStatus> statuses);
+
     /** [userId, completedOrders, totalSpent] for a page of users, in one query. */
     @Query("""
             SELECT o.user.id, COUNT(o), COALESCE(SUM(o.total), 0)

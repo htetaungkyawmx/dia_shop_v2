@@ -11,7 +11,7 @@ class AdminApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'Dia Shop Admin',
+      title: 'Game Store Admin',
       debugShowCheckedModeBanner: false,
       routerConfig: ref.watch(routerProvider),
       themeMode: ref.watch(themeModeProvider),

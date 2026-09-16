@@ -32,8 +32,8 @@ class _UsersPageState extends ConsumerState<UsersPage> {
           SearchField(
             hint: 'Email, name or phone',
             onChanged: (value) => setState(
-              () => _filter =
-                  UserFilter(query: value, status: _filter.status, role: _filter.role),
+              () => _filter = UserFilter(
+                  query: value, status: _filter.status, role: _filter.role),
             ),
           ),
           const SizedBox(width: 12),
@@ -67,7 +67,8 @@ class _UsersPageState extends ConsumerState<UsersPage> {
               loadingHeight: 420,
               builder: (page) {
                 if (page.items.isEmpty) {
-                  return const AdminEmpty(icon: Icons.people_rounded, title: 'No customers found');
+                  return const AdminEmpty(
+                      icon: Icons.people_rounded, title: 'No customers found');
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
@@ -94,7 +95,8 @@ class _UsersPageState extends ConsumerState<UsersPage> {
       label: Text(label),
       selected: selected,
       onSelected: (_) => setState(
-        () => _filter = UserFilter(query: _filter.query, status: status, role: role),
+        () => _filter =
+            UserFilter(query: _filter.query, status: status, role: role),
       ),
     );
   }
@@ -138,15 +140,19 @@ class _UsersPageState extends ConsumerState<UsersPage> {
                   decoration: const InputDecoration(labelText: 'Role'),
                   items: const [
                     DropdownMenuItem(value: 'ADMIN', child: Text('Admin')),
-                    DropdownMenuItem(value: 'SUPER_ADMIN', child: Text('Super admin')),
+                    DropdownMenuItem(
+                        value: 'SUPER_ADMIN', child: Text('Super admin')),
                   ],
-                  onChanged: (value) => setDialogState(() => role = value ?? 'ADMIN'),
+                  onChanged: (value) =>
+                      setDialogState(() => role = value ?? 'ADMIN'),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
               child: const Text('Create'),
@@ -166,7 +172,11 @@ class _UsersPageState extends ConsumerState<UsersPage> {
     name.dispose();
     password.dispose();
 
-    if (confirmed != true || values.email.isEmpty || values.password.length < 8) return;
+    if (confirmed != true ||
+        values.email.isEmpty ||
+        values.password.length < 8) {
+      return;
+    }
 
     try {
       await ref.read(apiProvider).createStaff(
@@ -216,8 +226,11 @@ class _UserRow extends ConsumerWidget {
               TextField(
                 controller: amount,
                 autofocus: true,
-                keyboardType: const TextInputType.numberWithOptions(signed: true),
-                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))],
+                keyboardType:
+                    const TextInputType.numberWithOptions(signed: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Amount',
                   helperText: 'Negative removes money, e.g. -5000',
@@ -236,7 +249,9 @@ class _UserRow extends ConsumerWidget {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Apply'),
@@ -250,36 +265,116 @@ class _UserRow extends ConsumerWidget {
     amount.dispose();
     reason.dispose();
 
-    if (confirmed != true || value == null || value == 0 || note.isEmpty) return;
+    if (confirmed != true || value == null || value == 0 || note.isEmpty) {
+      return;
+    }
 
     try {
-      await ref.read(apiProvider).adjustBalance(user.id, amount: value, reason: note);
+      await ref
+          .read(apiProvider)
+          .adjustBalance(user.id, amount: value, reason: note);
       onChanged();
       if (context.mounted) {
-        AdminSnack.success(context, '${Format.signedMoney(value)} applied to ${user.email}');
+        AdminSnack.success(
+            context, '${Format.signedMoney(value)} applied to ${user.email}');
       }
     } catch (error) {
       if (context.mounted) AdminSnack.error(context, error);
     }
   }
 
-  Future<void> _setStatus(BuildContext context, WidgetRef ref, String status) async {
+  Future<void> _resetPassword(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset password'),
+        content: Text(
+          'Give ${user.email} a temporary password? They will be signed out of every device '
+          'and must use the new password to sign in.',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Reset')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final temporary = await ref.read(apiProvider).resetPassword(user.id);
+      if (!context.mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Temporary password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Send this to ${user.displayName}. It is shown only once.'),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: SelectableText(
+                      temporary,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(letterSpacing: 1.5),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Copy',
+                    icon: const Icon(Icons.copy_rounded),
+                    onPressed: () async {
+                      await Clipboard.setData(ClipboardData(text: temporary));
+                      if (context.mounted)
+                        AdminSnack.success(context, 'Copied');
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Done'))
+          ],
+        ),
+      );
+    } catch (error) {
+      if (context.mounted) AdminSnack.error(context, error);
+    }
+  }
+
+  Future<void> _setStatus(
+      BuildContext context, WidgetRef ref, String status) async {
     try {
       await ref.read(apiProvider).updateUser(user.id, {'status': status});
       onChanged();
       if (context.mounted) {
-        AdminSnack.success(context, status == 'ACTIVE' ? 'Account restored' : 'Account suspended');
+        AdminSnack.success(context,
+            status == 'ACTIVE' ? 'Account restored' : 'Account suspended');
       }
     } catch (error) {
       if (context.mounted) AdminSnack.error(context, error);
     }
   }
 
-  Future<void> _setRole(BuildContext context, WidgetRef ref, String role) async {
+  Future<void> _setRole(
+      BuildContext context, WidgetRef ref, String role) async {
     try {
       await ref.read(apiProvider).updateUser(user.id, {'role': role});
       onChanged();
-      if (context.mounted) AdminSnack.success(context, 'Role updated to ${prettyStatus(role)}');
+      if (context.mounted) {
+        AdminSnack.success(context, 'Role updated to ${prettyStatus(role)}');
+      }
     } catch (error) {
       if (context.mounted) AdminSnack.error(context, error);
     }
@@ -298,8 +393,11 @@ class _UserRow extends ConsumerWidget {
               radius: 20,
               backgroundColor: AdminTheme.brand.withValues(alpha: 0.15),
               child: Text(
-                user.displayName.isEmpty ? '?' : user.displayName[0].toUpperCase(),
-                style: theme.textTheme.titleSmall?.copyWith(color: AdminTheme.brand),
+                user.displayName.isEmpty
+                    ? '?'
+                    : user.displayName[0].toUpperCase(),
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(color: AdminTheme.brand),
               ),
             ),
             const SizedBox(width: 14),
@@ -310,10 +408,13 @@ class _UserRow extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Flexible(child: Text(user.displayName, style: theme.textTheme.titleSmall)),
+                      Flexible(
+                          child: Text(user.displayName,
+                              style: theme.textTheme.titleSmall)),
                       if (user.isAdmin) ...[
                         const SizedBox(width: 8),
-                        StatusBadge(status: 'REFUNDED', label: prettyStatus(user.role)),
+                        StatusBadge(
+                            status: 'REFUNDED', label: prettyStatus(user.role)),
                       ],
                       if (user.isSuspended) ...[
                         const SizedBox(width: 8),
@@ -333,7 +434,8 @@ class _UserRow extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(Format.money(user.balance), style: theme.textTheme.titleSmall),
+                  Text(Format.money(user.balance),
+                      style: theme.textTheme.titleSmall),
                   Text(
                     'balance',
                     style: theme.textTheme.labelSmall
@@ -346,7 +448,8 @@ class _UserRow extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(Format.money(user.totalSpent), style: theme.textTheme.bodyMedium),
+                  Text(Format.money(user.totalSpent),
+                      style: theme.textTheme.bodyMedium),
                   Text(
                     '${user.orderCount} order(s)',
                     style: theme.textTheme.labelSmall
@@ -358,7 +461,9 @@ class _UserRow extends ConsumerWidget {
             SizedBox(
               width: 96,
               child: Text(
-                user.lastLoginAt == null ? 'never' : Format.relative(user.lastLoginAt!),
+                user.lastLoginAt == null
+                    ? 'never'
+                    : Format.relative(user.lastLoginAt!),
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
@@ -376,6 +481,8 @@ class _UserRow extends ConsumerWidget {
                     await _setRole(context, ref, 'ADMIN');
                   case 'make_user':
                     await _setRole(context, ref, 'USER');
+                  case 'reset_password':
+                    await _resetPassword(context, ref);
                 }
               },
               itemBuilder: (context) => [
@@ -388,6 +495,14 @@ class _UserRow extends ConsumerWidget {
                   ]),
                 ),
                 if (!isSelf) ...[
+                  const PopupMenuItem(
+                    value: 'reset_password',
+                    child: Row(children: [
+                      Icon(Icons.key_rounded, size: 18),
+                      SizedBox(width: 10),
+                      Text('Reset password'),
+                    ]),
+                  ),
                   const PopupMenuDivider(),
                   if (user.isSuspended)
                     const PopupMenuItem(
@@ -402,7 +517,8 @@ class _UserRow extends ConsumerWidget {
                     const PopupMenuItem(
                       value: 'suspend',
                       child: Row(children: [
-                        Icon(Icons.block_rounded, size: 18, color: AdminTheme.danger),
+                        Icon(Icons.block_rounded,
+                            size: 18, color: AdminTheme.danger),
                         SizedBox(width: 10),
                         Text('Suspend account'),
                       ]),
@@ -420,7 +536,8 @@ class _UserRow extends ConsumerWidget {
                         : const PopupMenuItem(
                             value: 'make_admin',
                             child: Row(children: [
-                              Icon(Icons.admin_panel_settings_outlined, size: 18),
+                              Icon(Icons.admin_panel_settings_outlined,
+                                  size: 18),
                               SizedBox(width: 10),
                               Text('Make admin'),
                             ]),

@@ -13,7 +13,8 @@ class Category {
   final String? nameMy;
   final String? iconUrl;
 
-  String localisedName(bool burmese) => burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
+  String localisedName(bool burmese) =>
+      burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
 
   factory Category.fromJson(Map<String, dynamic> json) => Category(
         id: (json['id'] as num).toInt(),
@@ -49,7 +50,8 @@ class ProductSummary {
   final String? imageUrl;
   final int? startingPrice;
 
-  String localisedName(bool burmese) => burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
+  String localisedName(bool burmese) =>
+      burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
 
   factory ProductSummary.fromJson(Map<String, dynamic> json) => ProductSummary(
         id: (json['id'] as num).toInt(),
@@ -88,16 +90,21 @@ class ProductField {
   final List<String> options;
   final String? validationRegex;
 
-  String localisedLabel(bool burmese) => burmese && (labelMy?.isNotEmpty ?? false) ? labelMy! : label;
+  String localisedLabel(bool burmese) =>
+      burmese && (labelMy?.isNotEmpty ?? false) ? labelMy! : label;
 
   /// Mirrors the server-side check so the user sees the problem before paying.
   String? validate(String? value, bool burmese) {
     final text = (value ?? '').trim();
     if (text.isEmpty) {
-      return required ? '${localisedLabel(burmese)} ${burmese ? 'ဖြည့်ပါ' : 'is required'}' : null;
+      return required
+          ? '${localisedLabel(burmese)} ${burmese ? 'ဖြည့်ပါ' : 'is required'}'
+          : null;
     }
     final pattern = validationRegex;
-    if (pattern != null && pattern.isNotEmpty && !RegExp('^(?:$pattern)\$').hasMatch(text)) {
+    if (pattern != null &&
+        pattern.isNotEmpty &&
+        !RegExp('^(?:$pattern)\$').hasMatch(text)) {
       return burmese
           ? '${localisedLabel(burmese)} မမှန်ကန်ပါ'
           : 'That ${localisedLabel(burmese)} does not look right';
@@ -113,7 +120,8 @@ class ProductField {
         labelMy: json['labelMy'] as String?,
         placeholder: json['placeholder'] as String?,
         helpText: json['helpText'] as String?,
-        options: (json['options'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
+        options:
+            (json['options'] as List<dynamic>? ?? []).map((e) => '$e').toList(),
         validationRegex: json['validationRegex'] as String?,
       );
 }
@@ -151,12 +159,14 @@ class ProductVariant {
 
   bool get isOnSale => compareAtPrice != null && compareAtPrice! > price;
 
-  int get discountPercent =>
-      isOnSale ? (((compareAtPrice! - price) / compareAtPrice!) * 100).round() : 0;
+  int get discountPercent => isOnSale
+      ? (((compareAtPrice! - price) / compareAtPrice!) * 100).round()
+      : 0;
 
   bool get isLowStock => remaining != null && remaining! > 0 && remaining! <= 5;
 
-  String localisedName(bool burmese) => burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
+  String localisedName(bool burmese) =>
+      burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
 
   factory ProductVariant.fromJson(Map<String, dynamic> json) => ProductVariant(
         id: (json['id'] as num).toInt(),
@@ -210,13 +220,18 @@ class ProductDetail {
 
   bool get isInstantDelivery => fulfillmentType == 'CODE_DELIVERY';
 
-  String localisedName(bool burmese) => burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
+  String localisedName(bool burmese) =>
+      burmese && (nameMy?.isNotEmpty ?? false) ? nameMy! : name;
 
   String? localisedDescription(bool burmese) =>
-      burmese && (descriptionMy?.isNotEmpty ?? false) ? descriptionMy : description;
+      burmese && (descriptionMy?.isNotEmpty ?? false)
+          ? descriptionMy
+          : description;
 
   String? localisedInstructions(bool burmese) =>
-      burmese && (instructionsMy?.isNotEmpty ?? false) ? instructionsMy : instructions;
+      burmese && (instructionsMy?.isNotEmpty ?? false)
+          ? instructionsMy
+          : instructions;
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) => ProductDetail(
         id: (json['id'] as num).toInt(),

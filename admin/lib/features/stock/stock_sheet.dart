@@ -16,7 +16,8 @@ class StockSheet extends ConsumerStatefulWidget {
   final AdminVariant variant;
   final VoidCallback onChanged;
 
-  static Future<void> show(BuildContext context, AdminVariant variant, VoidCallback onChanged) {
+  static Future<void> show(
+      BuildContext context, AdminVariant variant, VoidCallback onChanged) {
     return showDialog<void>(
       context: context,
       builder: (context) => Dialog(
@@ -33,9 +34,11 @@ class StockSheet extends ConsumerStatefulWidget {
   ConsumerState<StockSheet> createState() => _StockSheetState();
 }
 
-class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProviderStateMixin {
+class _StockSheetState extends ConsumerState<StockSheet>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabs = TabController(length: 2, vsync: this);
   late AdminVariant _variant = widget.variant;
+
   /// Tracked separately so a code upload can update the count without having
   /// to rebuild a whole AdminVariant from a partial response.
   late int _available = widget.variant.available;
@@ -73,10 +76,13 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
 
     setState(() => _busy = true);
     try {
-      final updated =
-          await ref.read(apiProvider).adjustStock(_variant.id, delta: delta, reason: reason, note: note);
+      final updated = await ref
+          .read(apiProvider)
+          .adjustStock(_variant.id, delta: delta, reason: reason, note: note);
       _afterChange(updated);
-      if (mounted) AdminSnack.success(context, 'Stock is now ${updated.available}');
+      if (mounted) {
+        AdminSnack.success(context, 'Stock is now ${updated.available}');
+      }
     } catch (error) {
       if (mounted) AdminSnack.error(context, error);
     } finally {
@@ -103,8 +109,11 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
                 const SizedBox(height: 16),
                 TextField(
                   controller: controller,
-                  keyboardType: const TextInputType.numberWithOptions(signed: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))],
+                  keyboardType:
+                      const TextInputType.numberWithOptions(signed: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))
+                  ],
                   decoration: const InputDecoration(
                     labelText: 'Change',
                     helperText: 'Use a negative number to remove, e.g. -3',
@@ -116,17 +125,23 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
                   decoration: const InputDecoration(labelText: 'Reason'),
                   items: const [
                     DropdownMenuItem(value: 'RESTOCK', child: Text('Restock')),
-                    DropdownMenuItem(value: 'MANUAL_ADJUST', child: Text('Manual adjust')),
-                    DropdownMenuItem(value: 'DAMAGE', child: Text('Damaged / lost')),
-                    DropdownMenuItem(value: 'CORRECTION', child: Text('Correction')),
+                    DropdownMenuItem(
+                        value: 'MANUAL_ADJUST', child: Text('Manual adjust')),
+                    DropdownMenuItem(
+                        value: 'DAMAGE', child: Text('Damaged / lost')),
+                    DropdownMenuItem(
+                        value: 'CORRECTION', child: Text('Correction')),
                   ],
-                  onChanged: (value) => setDialogState(() => reason = value ?? 'RESTOCK'),
+                  onChanged: (value) =>
+                      setDialogState(() => reason = value ?? 'RESTOCK'),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             FilledButton(
               onPressed: () {
                 final delta = int.tryParse(controller.text.trim());
@@ -164,7 +179,9 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             onPressed: () {
               final value = int.tryParse(controller.text.trim());
@@ -207,7 +224,8 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Paste one code per line. Duplicates are skipped automatically.'),
+              const Text(
+                  'Paste one code per line. Duplicates are skipped automatically.'),
               const SizedBox(height: 14),
               TextField(
                 controller: codesController,
@@ -232,7 +250,9 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Add to stock'),
@@ -254,7 +274,9 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
 
     setState(() => _busy = true);
     try {
-      final result = await ref.read(apiProvider).addStockCodes(_variant.id, codes, secret: secret);
+      final result = await ref
+          .read(apiProvider)
+          .addStockCodes(_variant.id, codes, secret: secret);
       ref.invalidate(stockCodesProvider(_variant.id));
       ref.invalidate(stockMovementsProvider(_variant.id));
       ref.invalidate(dashboardProvider);
@@ -316,7 +338,10 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
               ),
               const SizedBox(width: 20),
               if (_busy)
-                const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2))
               else if (_variant.isUnlimited)
                 Text(
                   'Unlimited stock — nothing to manage.',
@@ -343,8 +368,10 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
                       onPressed: () => _adjust(1, 'RESTOCK'),
                       icon: const Icon(Icons.add_rounded, size: 18),
                     ),
-                    OutlinedButton(onPressed: _customAdjust, child: const Text('Adjust…')),
-                    OutlinedButton(onPressed: _recount, child: const Text('Recount')),
+                    OutlinedButton(
+                        onPressed: _customAdjust, child: const Text('Adjust…')),
+                    OutlinedButton(
+                        onPressed: _recount, child: const Text('Recount')),
                   ],
                 ),
             ],
@@ -364,7 +391,8 @@ class _StockSheetState extends ConsumerState<StockSheet> with SingleTickerProvid
                   : const AdminEmpty(
                       icon: Icons.vpn_key_off_rounded,
                       title: 'Not a code pool',
-                      message: 'Switch this package to Code pool stock to store keys here.',
+                      message:
+                          'Switch this package to Code pool stock to store keys here.',
                     ),
             ],
           ),
@@ -412,14 +440,15 @@ class _StockSummary extends StatelessWidget {
           children: [
             Text(
               unlimited ? 'Unlimited' : '$available',
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
             Text(
               unlimited
                   ? 'Fulfilled by hand, never runs out'
                   : 'in stock · alert below ${variant.lowStockThreshold}',
-              style:
-                  theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -443,7 +472,8 @@ class _MovementList extends ConsumerWidget {
       onRetry: () => ref.invalidate(stockMovementsProvider(variantId)),
       builder: (page) {
         if (page.items.isEmpty) {
-          return const AdminEmpty(icon: Icons.history_rounded, title: 'No stock changes yet');
+          return const AdminEmpty(
+              icon: Icons.history_rounded, title: 'No stock changes yet');
         }
         return ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -473,8 +503,8 @@ class _MovementList extends ConsumerWidget {
                       if ((move.note ?? '').isNotEmpty)
                         Text(
                           move.note!,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant),
                         ),
                     ],
                   ),
@@ -533,7 +563,8 @@ class _CodeList extends ConsumerWidget {
                 // to the buyer, and an unsold one should not leak from a screen.
                 Expanded(
                   child: Text(code.codeMasked,
-                      style: theme.textTheme.bodyMedium?.copyWith(letterSpacing: 1.1)),
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(letterSpacing: 1.1)),
                 ),
                 StatusBadge(
                   status: switch (code.status) {

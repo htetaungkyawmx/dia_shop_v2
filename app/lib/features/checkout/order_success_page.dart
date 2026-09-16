@@ -45,7 +45,9 @@ class OrderSuccessPage extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        delivered ? Icons.check_rounded : Icons.hourglass_top_rounded,
+                        delivered
+                            ? Icons.check_rounded
+                            : Icons.hourglass_top_rounded,
                         size: 44,
                         color: delivered ? AppTheme.success : AppTheme.info,
                       ),
@@ -59,7 +61,9 @@ class OrderSuccessPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    delivered ? strings.orderDeliveredBody : strings.orderPlacedBody,
+                    delivered
+                        ? strings.orderDeliveredBody
+                        : strings.orderPlacedBody,
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     textAlign: TextAlign.center,
@@ -76,8 +80,11 @@ class OrderSuccessPage extends ConsumerWidget {
                         tooltip: strings.copy,
                         icon: const Icon(Icons.copy_rounded, size: 18),
                         onPressed: () async {
-                          await Clipboard.setData(ClipboardData(text: data.orderNo));
-                          if (context.mounted) AppSnack.success(context, strings.copied);
+                          await Clipboard.setData(
+                              ClipboardData(text: data.orderNo));
+                          if (context.mounted) {
+                            AppSnack.success(context, strings.copied);
+                          }
                         },
                       ),
                     ),
@@ -88,7 +95,8 @@ class OrderSuccessPage extends ConsumerWidget {
                   ],
                   const SizedBox(height: 28),
                   FilledButton(
-                    onPressed: () => context.pushReplacement('/orders/${data.id}'),
+                    onPressed: () =>
+                        context.pushReplacement('/orders/${data.id}'),
                     child: Text(strings.viewOrder),
                   ),
                   const SizedBox(height: 10),
@@ -150,7 +158,9 @@ class _CodeCard extends StatelessWidget {
                         icon: const Icon(Icons.copy_rounded, size: 18),
                         onPressed: () async {
                           await Clipboard.setData(ClipboardData(text: code));
-                          if (context.mounted) AppSnack.success(context, strings.copied);
+                          if (context.mounted) {
+                            AppSnack.success(context, strings.copied);
+                          }
                         },
                       ),
                     ],
@@ -158,7 +168,8 @@ class _CodeCard extends StatelessWidget {
                 ),
               ),
             if (item.deliveredSecret != null)
-              Text('PIN: ${item.deliveredSecret}', style: theme.textTheme.bodySmall),
+              Text('PIN: ${item.deliveredSecret}',
+                  style: theme.textTheme.bodySmall),
           ],
         ),
       ),

@@ -81,7 +81,8 @@ class ApiException implements Exception {
       403 => 'You do not have access to this.',
       404 => 'We could not find what you were looking for.',
       409 => 'That action conflicts with the current state. Please refresh.',
-      final int code when code >= 500 => 'The server had a problem. Please try again shortly.',
+      final int code when code >= 500 =>
+        'The server had a problem. Please try again shortly.',
       _ => 'Something went wrong. Please try again.',
     };
   }

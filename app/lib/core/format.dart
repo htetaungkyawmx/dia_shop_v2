@@ -17,9 +17,11 @@ class Format {
 
   static String number(num value) => _thousands.format(value);
 
-  static String date(DateTime value) => DateFormat('d MMM yyyy').format(value.toLocal());
+  static String date(DateTime value) =>
+      DateFormat('d MMM yyyy').format(value.toLocal());
 
-  static String dateTime(DateTime value) => DateFormat('d MMM yyyy, h:mm a').format(value.toLocal());
+  static String dateTime(DateTime value) =>
+      DateFormat('d MMM yyyy, h:mm a').format(value.toLocal());
 
   /// "2 hours ago" style, falling back to a date once it stops being useful.
   static String relative(DateTime value) {

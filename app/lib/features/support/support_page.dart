@@ -7,6 +7,7 @@ import '../../l10n/strings.dart';
 import '../../models/misc.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 
 class SupportPage extends ConsumerWidget {
   const SupportPage({super.key});
@@ -16,8 +17,8 @@ class SupportPage extends ConsumerWidget {
     final strings = Strings.of(context);
     final tickets = ref.watch(ticketsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.support)),
+    return AppPage(
+      title: strings.support,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _compose(context, ref),
         icon: const Icon(Icons.add_rounded),
@@ -31,8 +32,8 @@ class SupportPage extends ConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (_, __) => const ShimmerBox(height: 96),
           ),
-          error: (error, _) =>
-              ErrorView(error: error, onRetry: () => ref.invalidate(ticketsProvider)),
+          error: (error, _) => ErrorView(
+              error: error, onRetry: () => ref.invalidate(ticketsProvider)),
           data: (page) {
             if (page.items.isEmpty) {
               return EmptyView(
@@ -45,7 +46,8 @@ class SupportPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
               itemCount: page.items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, index) => _TicketCard(ticket: page.items[index]),
+              itemBuilder: (context, index) =>
+                  _TicketCard(ticket: page.items[index]),
             );
           },
         ),
@@ -74,19 +76,22 @@ class SupportPage extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(strings.newTicket, style: Theme.of(context).textTheme.titleLarge),
+              Text(strings.newTicket,
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
               TextFormField(
                 controller: subject,
                 decoration: InputDecoration(labelText: strings.subject),
-                validator: (value) => (value ?? '').trim().isEmpty ? strings.subject : null,
+                validator: (value) =>
+                    (value ?? '').trim().isEmpty ? strings.subject : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: message,
                 maxLines: 4,
                 decoration: InputDecoration(labelText: strings.message),
-                validator: (value) => (value ?? '').trim().isEmpty ? strings.message : null,
+                validator: (value) =>
+                    (value ?? '').trim().isEmpty ? strings.message : null,
               ),
               const SizedBox(height: 20),
               FilledButton.icon(
@@ -139,7 +144,9 @@ class _TicketCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Expanded(child: Text(ticket.subject, style: theme.textTheme.titleSmall)),
+                Expanded(
+                    child: Text(ticket.subject,
+                        style: theme.textTheme.titleSmall)),
                 StatusChip(
                   label: ticket.status,
                   color: ticket.answered ? AppTheme.success : AppTheme.warning,
@@ -151,8 +158,8 @@ class _TicketCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               Format.relative(ticket.createdAt),
-              style:
-                  theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
             if (ticket.answered) ...[
               const SizedBox(height: 12),
@@ -162,13 +169,15 @@ class _TicketCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.success.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-                  border: Border.all(color: AppTheme.success.withValues(alpha: 0.25)),
+                  border: Border.all(
+                      color: AppTheme.success.withValues(alpha: 0.25)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(strings.ourReply,
-                        style: theme.textTheme.labelLarge?.copyWith(color: AppTheme.success)),
+                        style: theme.textTheme.labelLarge
+                            ?.copyWith(color: AppTheme.success)),
                     const SizedBox(height: 4),
                     Text(ticket.adminReply!, style: theme.textTheme.bodyMedium),
                   ],

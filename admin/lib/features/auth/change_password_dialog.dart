@@ -9,11 +9,12 @@ import '../../widgets/admin_widgets.dart';
 class ChangePasswordDialog extends ConsumerStatefulWidget {
   const ChangePasswordDialog({super.key});
 
-  static Future<bool?> show(BuildContext context) =>
-      showDialog<bool>(context: context, builder: (_) => const ChangePasswordDialog());
+  static Future<bool?> show(BuildContext context) => showDialog<bool>(
+      context: context, builder: (_) => const ChangePasswordDialog());
 
   @override
-  ConsumerState<ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+  ConsumerState<ChangePasswordDialog> createState() =>
+      _ChangePasswordDialogState();
 }
 
 class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
@@ -35,7 +36,9 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
     try {
-      await ref.read(apiProvider).changePassword(current: _current.text, next: _next.text);
+      await ref
+          .read(apiProvider)
+          .changePassword(current: _current.text, next: _next.text);
       if (mounted) Navigator.pop(context, true);
     } catch (error) {
       if (mounted) AdminSnack.error(context, error);
@@ -59,8 +62,10 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                 controller: _current,
                 obscureText: true,
                 autofocus: true,
-                decoration: const InputDecoration(labelText: 'Current password'),
-                validator: (v) => (v ?? '').isEmpty ? 'Enter your current password' : null,
+                decoration:
+                    const InputDecoration(labelText: 'Current password'),
+                validator: (v) =>
+                    (v ?? '').isEmpty ? 'Enter your current password' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -68,7 +73,8 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'New password',
-                  helperText: 'At least 8 characters, with a letter and a number',
+                  helperText:
+                      'At least 8 characters, with a letter and a number',
                 ),
                 validator: (v) {
                   final text = v ?? '';
@@ -78,7 +84,9 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                       !RegExp(r'\d').hasMatch(text)) {
                     return 'At least 8 characters, with a letter and a number';
                   }
-                  if (text == _current.text) return 'Choose a different password';
+                  if (text == _current.text) {
+                    return 'Choose a different password';
+                  }
                   return null;
                 },
               ),
@@ -87,19 +95,26 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                 controller: _confirm,
                 obscureText: true,
                 onFieldSubmitted: (_) => _submit(),
-                decoration: const InputDecoration(labelText: 'Repeat new password'),
-                validator: (v) => v != _next.text ? 'Passwords do not match' : null,
+                decoration:
+                    const InputDecoration(labelText: 'Repeat new password'),
+                validator: (v) =>
+                    v != _next.text ? 'Passwords do not match' : null,
               ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel')),
         FilledButton(
           onPressed: _busy ? null : _submit,
           child: _busy
-              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('Change password'),
         ),
       ],

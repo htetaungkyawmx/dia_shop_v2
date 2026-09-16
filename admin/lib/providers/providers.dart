@@ -13,7 +13,8 @@ import '../models/user.dart';
 import '../models/wallet.dart';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>(
-  (ref) => throw UnimplementedError('sharedPreferencesProvider must be overridden'),
+  (ref) =>
+      throw UnimplementedError('sharedPreferencesProvider must be overridden'),
 );
 
 final tokenStoreProvider = Provider<TokenStore>(
@@ -23,11 +24,13 @@ final tokenStoreProvider = Provider<TokenStore>(
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(
     ref.watch(tokenStoreProvider),
-    onSessionExpired: () async => ref.read(authProvider.notifier).handleSessionExpiry(),
+    onSessionExpired: () async =>
+        ref.read(authProvider.notifier).handleSessionExpiry(),
   );
 });
 
-final apiProvider = Provider<AdminApi>((ref) => AdminApi(ref.watch(apiClientProvider)));
+final apiProvider =
+    Provider<AdminApi>((ref) => AdminApi(ref.watch(apiClientProvider)));
 
 // ------------------------------------------------------------------- theme
 
@@ -35,7 +38,8 @@ class ThemeNotifier extends Notifier<ThemeMode> {
   static const _key = 'admin_theme_mode';
 
   @override
-  ThemeMode build() => switch (ref.watch(sharedPreferencesProvider).getString(_key)) {
+  ThemeMode build() =>
+      switch (ref.watch(sharedPreferencesProvider).getString(_key)) {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
@@ -47,7 +51,8 @@ class ThemeNotifier extends Notifier<ThemeMode> {
   }
 }
 
-final themeModeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
+final themeModeProvider =
+    NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
 
 // -------------------------------------------------------------------- auth
 
@@ -72,7 +77,9 @@ class AuthNotifier extends AsyncNotifier<AppUser?> {
   }
 
   Future<void> login(String email, String password) async {
-    state = const AsyncLoading();
+    // copyWithPrevious keeps hasValue true, so the router does not treat a
+    // sign-in in progress as the cold-start session check.
+    state = const AsyncLoading<AppUser?>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final result = await ref.read(apiProvider).login(email, password);
       if (!result.user.isAdmin) {
@@ -118,9 +125,11 @@ class AuthNotifier extends AsyncNotifier<AppUser?> {
   }
 }
 
-final authProvider = AsyncNotifierProvider<AuthNotifier, AppUser?>(AuthNotifier.new);
+final authProvider =
+    AsyncNotifierProvider<AuthNotifier, AppUser?>(AuthNotifier.new);
 
-final isSignedInProvider = Provider<bool>((ref) => ref.watch(authProvider).value != null);
+final isSignedInProvider =
+    Provider<bool>((ref) => ref.watch(authProvider).value != null);
 
 // --------------------------------------------------------------- dashboard
 
@@ -153,13 +162,16 @@ class OrderFilter {
   int get hashCode => Object.hash(status, query);
 }
 
-final ordersProvider = FutureProvider.family<Paged<Order>, OrderFilter>((ref, filter) async {
+final ordersProvider =
+    FutureProvider.family<Paged<Order>, OrderFilter>((ref, filter) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
-  return ref.watch(apiProvider).orders(query: filter.query, status: filter.status);
+  return ref
+      .watch(apiProvider)
+      .orders(query: filter.query, status: filter.status);
 });
 
-final orderProvider =
-    FutureProvider.family<Order, int>((ref, id) => ref.watch(apiProvider).order(id));
+final orderProvider = FutureProvider.family<Order, int>(
+    (ref, id) => ref.watch(apiProvider).order(id));
 
 // ------------------------------------------------------------------ topups
 
@@ -177,9 +189,12 @@ class TopupFilter {
   int get hashCode => Object.hash(status, query);
 }
 
-final topupsProvider = FutureProvider.family<Paged<TopupRequest>, TopupFilter>((ref, filter) async {
+final topupsProvider = FutureProvider.family<Paged<TopupRequest>, TopupFilter>(
+    (ref, filter) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
-  return ref.watch(apiProvider).topups(query: filter.query, status: filter.status);
+  return ref
+      .watch(apiProvider)
+      .topups(query: filter.query, status: filter.status);
 });
 
 // ----------------------------------------------------------------- catalog
@@ -208,7 +223,8 @@ class ProductFilter {
 }
 
 final productsProvider =
-    FutureProvider.family<Paged<AdminProduct>, ProductFilter>((ref, filter) async {
+    FutureProvider.family<Paged<AdminProduct>, ProductFilter>(
+        (ref, filter) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
   return ref.watch(apiProvider).products(
         query: filter.query,
@@ -217,8 +233,8 @@ final productsProvider =
       );
 });
 
-final productProvider =
-    FutureProvider.family<AdminProduct, int>((ref, id) => ref.watch(apiProvider).product(id));
+final productProvider = FutureProvider.family<AdminProduct, int>(
+    (ref, id) => ref.watch(apiProvider).product(id));
 
 final stockMovementsProvider = FutureProvider.family<Paged<StockMovement>, int>(
   (ref, variantId) => ref.watch(apiProvider).stockMovements(variantId),
@@ -248,7 +264,8 @@ class UserFilter {
   int get hashCode => Object.hash(query, status, role);
 }
 
-final usersProvider = FutureProvider.family<Paged<AdminUser>, UserFilter>((ref, filter) async {
+final usersProvider =
+    FutureProvider.family<Paged<AdminUser>, UserFilter>((ref, filter) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
   return ref.watch(apiProvider).users(
         query: filter.query,
@@ -257,13 +274,15 @@ final usersProvider = FutureProvider.family<Paged<AdminUser>, UserFilter>((ref, 
       );
 });
 
-final userTransactionsProvider = FutureProvider.family<Paged<WalletTransaction>, int>(
+final userTransactionsProvider =
+    FutureProvider.family<Paged<WalletTransaction>, int>(
   (ref, userId) => ref.watch(apiProvider).userTransactions(userId),
 );
 
 // ----------------------------------------------------------------- support
 
-final ticketsProvider = FutureProvider.family<Paged<SupportTicket>, String?>((ref, status) async {
+final ticketsProvider =
+    FutureProvider.family<Paged<SupportTicket>, String?>((ref, status) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
   return ref.watch(apiProvider).tickets(status: status);
 });

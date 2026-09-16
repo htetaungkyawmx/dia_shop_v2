@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../l10n/strings.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 import '../auth/auth_scaffold.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
@@ -58,8 +59,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final strings = Strings.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.editProfile)),
+    return AppPage(
+      title: strings.editProfile,
       body: MaxWidthBody(
         maxWidth: 520,
         child: Form(
@@ -71,7 +72,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 controller: _name,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(labelText: strings.displayName),
-                validator: (value) => AuthValidators.notEmpty(value, strings.nameRequired),
+                validator: (value) =>
+                    AuthValidators.notEmpty(value, strings.nameRequired),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -84,7 +86,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 onPressed: _busy ? null : _save,
                 child: _busy
                     ? const SizedBox(
-                        width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : Text(strings.save),
               ),
             ],

@@ -11,7 +11,8 @@ class Env {
   );
 
   /// OAuth client id for Google Sign-In. Empty disables the Google button.
-  static const String googleClientId = String.fromEnvironment('GOOGLE_CLIENT_ID');
+  static const String googleClientId =
+      String.fromEnvironment('GOOGLE_CLIENT_ID');
 
   static String get apiRoot => '$apiBaseUrl/api/v1';
 

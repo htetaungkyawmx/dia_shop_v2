@@ -29,7 +29,8 @@ class WalletTransaction {
 
   bool get isCredit => amount > 0;
 
-  factory WalletTransaction.fromJson(Map<String, dynamic> json) => WalletTransaction(
+  factory WalletTransaction.fromJson(Map<String, dynamic> json) =>
+      WalletTransaction(
         id: json['id'] as String,
         type: json['type'] as String,
         amount: (json['amount'] as num).toInt(),
@@ -65,7 +66,9 @@ class PaymentMethod {
   final String? instructionsMy;
 
   String? localisedInstructions(bool burmese) =>
-      burmese && (instructionsMy?.isNotEmpty ?? false) ? instructionsMy : instructions;
+      burmese && (instructionsMy?.isNotEmpty ?? false)
+          ? instructionsMy
+          : instructions;
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) => PaymentMethod(
         id: (json['id'] as num).toInt(),
@@ -138,8 +141,9 @@ class TopupRequest {
         createdAt: DateTime.parse(json['createdAt'] as String),
         screenshotUrl: json['screenshotUrl'] as String?,
         adminNote: json['adminNote'] as String?,
-        reviewedAt:
-            json['reviewedAt'] == null ? null : DateTime.parse(json['reviewedAt'] as String),
+        reviewedAt: json['reviewedAt'] == null
+            ? null
+            : DateTime.parse(json['reviewedAt'] as String),
         userEmail: json['userEmail'] as String?,
         userName: json['userName'] as String?,
         senderName: json['senderName'] as String?,

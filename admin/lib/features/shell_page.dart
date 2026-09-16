@@ -21,14 +21,19 @@ class AdminShell extends ConsumerWidget {
     final extended = MediaQuery.sizeOf(context).width >= 1180;
 
     final destinations = <_Dest>[
-      const _Dest('Dashboard', Icons.dashboard_outlined, Icons.dashboard_rounded),
+      const _Dest(
+          'Dashboard', Icons.dashboard_outlined, Icons.dashboard_rounded),
       _Dest('Orders', Icons.receipt_long_outlined, Icons.receipt_long_rounded,
           badge: dashboard?.pendingOrders ?? 0),
       _Dest('Top-ups', Icons.account_balance_wallet_outlined,
-          Icons.account_balance_wallet_rounded, badge: dashboard?.pendingTopups ?? 0),
-      const _Dest('Products', Icons.inventory_2_outlined, Icons.inventory_2_rounded),
-      const _Dest('Customers', Icons.people_outline_rounded, Icons.people_rounded),
-      _Dest('Support', Icons.support_agent_outlined, Icons.support_agent_rounded,
+          Icons.account_balance_wallet_rounded,
+          badge: dashboard?.pendingTopups ?? 0),
+      const _Dest(
+          'Products', Icons.inventory_2_outlined, Icons.inventory_2_rounded),
+      const _Dest(
+          'Customers', Icons.people_outline_rounded, Icons.people_rounded),
+      _Dest(
+          'Support', Icons.support_agent_outlined, Icons.support_agent_rounded,
           badge: dashboard?.openTickets ?? 0),
       const _Dest('Settings', Icons.settings_outlined, Icons.settings_rounded),
     ];
@@ -45,22 +50,15 @@ class AdminShell extends ConsumerWidget {
               initialLocation: index == navigationShell.currentIndex,
             ),
             leading: Padding(
-              padding: EdgeInsets.fromLTRB(extended ? 16 : 0, 18, extended ? 16 : 0, 18),
+              padding: EdgeInsets.fromLTRB(
+                  extended ? 16 : 0, 18, extended ? 16 : 0, 18),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: AdminTheme.brand,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.shield_moon_rounded, color: Colors.white, size: 18),
-                  ),
+                  Image.asset('assets/brand/logo.png', width: 34, height: 34),
                   if (extended) ...[
                     const SizedBox(width: 10),
-                    Text('Dia Shop', style: theme.textTheme.titleSmall),
+                    Text('Game Store', style: theme.textTheme.titleSmall),
                   ],
                 ],
               ),
@@ -78,7 +76,9 @@ class AdminShell extends ConsumerWidget {
                         onPressed: () {
                           final current = ref.read(themeModeProvider);
                           ref.read(themeModeProvider.notifier).set(
-                                current == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
+                                current == ThemeMode.dark
+                                    ? ThemeMode.light
+                                    : ThemeMode.dark,
                               );
                         },
                         icon: const Icon(Icons.brightness_6_outlined, size: 20),
@@ -88,7 +88,8 @@ class AdminShell extends ConsumerWidget {
                         tooltip: user?.email ?? '',
                         onSelected: (value) async {
                           if (value == 'password') {
-                            final changed = await ChangePasswordDialog.show(context);
+                            final changed =
+                                await ChangePasswordDialog.show(context);
                             // The server revokes every session on a change,
                             // so sign in again with the new password.
                             if (changed == true) {
@@ -109,7 +110,8 @@ class AdminShell extends ConsumerWidget {
                               children: [
                                 Text(user?.displayName ?? '',
                                     style: theme.textTheme.titleSmall),
-                                Text(user?.email ?? '', style: theme.textTheme.bodySmall),
+                                Text(user?.email ?? '',
+                                    style: theme.textTheme.bodySmall),
                               ],
                             ),
                           ),
@@ -133,7 +135,8 @@ class AdminShell extends ConsumerWidget {
                         ],
                         child: CircleAvatar(
                           radius: 16,
-                          backgroundColor: AdminTheme.brand.withValues(alpha: 0.18),
+                          backgroundColor:
+                              AdminTheme.brand.withValues(alpha: 0.18),
                           child: Text(
                             user?.initials ?? '?',
                             style: theme.textTheme.labelMedium
@@ -150,7 +153,8 @@ class AdminShell extends ConsumerWidget {
               for (final d in destinations)
                 NavigationRailDestination(
                   icon: _Badged(count: d.badge, child: Icon(d.icon)),
-                  selectedIcon: _Badged(count: d.badge, child: Icon(d.selectedIcon)),
+                  selectedIcon:
+                      _Badged(count: d.badge, child: Icon(d.selectedIcon)),
                   label: Text(d.label),
                 ),
             ],

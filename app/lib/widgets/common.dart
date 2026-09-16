@@ -45,7 +45,8 @@ class AppImage extends StatelessWidget {
               width: width,
               height: height,
               fit: fit,
-              placeholder: (_, __) => ShimmerBox(width: width, height: height, radius: radius),
+              placeholder: (_, __) =>
+                  ShimmerBox(width: width, height: height, radius: radius),
               errorWidget: (_, __, ___) => placeholder,
             ),
     );
@@ -53,7 +54,8 @@ class AppImage extends StatelessWidget {
 }
 
 class ShimmerBox extends StatelessWidget {
-  const ShimmerBox({super.key, this.width, this.height, this.radius = AppTheme.radiusSmall});
+  const ShimmerBox(
+      {super.key, this.width, this.height, this.radius = AppTheme.radiusSmall});
 
   final double? width;
   final double? height;
@@ -82,7 +84,8 @@ class ShimmerBox extends StatelessWidget {
 
 /// Full-screen failure state with a retry button and a readable message.
 class ErrorView extends StatelessWidget {
-  const ErrorView({super.key, required this.error, this.onRetry, this.compact = false});
+  const ErrorView(
+      {super.key, required this.error, this.onRetry, this.compact = false});
 
   final Object error;
   final VoidCallback? onRetry;
@@ -93,7 +96,8 @@ class ErrorView extends StatelessWidget {
     final strings = Strings.of(context);
     final theme = Theme.of(context);
     final failure = ApiException.from(error);
-    final isOffline = failure.code == 'NO_CONNECTION' || failure.code == 'TIMEOUT';
+    final isOffline =
+        failure.code == 'NO_CONNECTION' || failure.code == 'TIMEOUT';
 
     return Center(
       child: Padding(
@@ -115,7 +119,8 @@ class ErrorView extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               failure.message,
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
@@ -166,16 +171,19 @@ class EmptyView extends StatelessWidget {
                 color: theme.colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: theme.colorScheme.onSurfaceVariant),
+              child: Icon(icon,
+                  size: 32, color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
-            Text(title, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+            Text(title,
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center),
             if (message != null) ...[
               const SizedBox(height: 6),
               Text(
                 message!,
-                style:
-                    theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -188,7 +196,8 @@ class EmptyView extends StatelessWidget {
 }
 
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({super.key, required this.title, this.actionLabel, this.onAction});
+  const SectionHeader(
+      {super.key, required this.title, this.actionLabel, this.onAction});
 
   final String title;
   final String? actionLabel;
@@ -198,11 +207,13 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
+        Expanded(
+            child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
         if (actionLabel != null && onAction != null)
           TextButton(
             onPressed: onAction,
-            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
+            style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8)),
             child: Text(actionLabel!),
           ),
       ],
@@ -211,25 +222,40 @@ class SectionHeader extends StatelessWidget {
 }
 
 class StatusChip extends StatelessWidget {
-  const StatusChip({super.key, required this.label, required this.color, this.icon});
+  const StatusChip({
+    super.key,
+    required this.label,
+    required this.color,
+    this.icon,
+    this.onDark = false,
+  });
 
   final String label;
   final Color color;
   final IconData? icon;
+
+  /// Solid dark backing for chips drawn over photos, where a tinted
+  /// background would disappear into the image.
+  final bool onDark;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: onDark
+            ? Colors.black.withValues(alpha: 0.6)
+            : color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
+        border: Border.all(color: color.withValues(alpha: onDark ? 0.6 : 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[Icon(icon, size: 13, color: color), const SizedBox(width: 5)],
+          if (icon != null) ...[
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5)
+          ],
           Text(
             label,
             style: Theme.of(context)
@@ -258,7 +284,8 @@ class AppSnack {
   static void info(BuildContext context, String message) =>
       _show(context, message, AppTheme.info, Icons.info_rounded);
 
-  static void _show(BuildContext context, String message, Color color, IconData icon) {
+  static void _show(
+      BuildContext context, String message, Color color, IconData icon) {
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
     messenger
@@ -269,7 +296,9 @@ class AppSnack {
             children: [
               Icon(icon, color: Colors.white, size: 18),
               const SizedBox(width: 10),
-              Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
+              Expanded(
+                  child: Text(message,
+                      style: const TextStyle(color: Colors.white))),
             ],
           ),
           backgroundColor: color,

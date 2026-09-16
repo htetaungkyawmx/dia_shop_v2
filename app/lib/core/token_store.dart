@@ -47,7 +47,8 @@ class TokenStore {
 
   bool get hasSession => _refreshToken != null;
 
-  Future<void> save({required String accessToken, required String refreshToken}) async {
+  Future<void> save(
+      {required String accessToken, required String refreshToken}) async {
     _accessToken = accessToken;
     _refreshToken = refreshToken;
     if (_secure != null) {

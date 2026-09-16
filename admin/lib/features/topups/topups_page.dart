@@ -43,7 +43,8 @@ class _TopupsPageState extends ConsumerState<TopupsPage> {
             children: [
               Text('${topup.userName ?? ''} · ${topup.userEmail ?? ''}'),
               const SizedBox(height: 4),
-              Text('Reference ${topup.referenceNo} via ${topup.paymentMethodName}'),
+              Text(
+                  'Reference ${topup.referenceNo} via ${topup.paymentMethodName}'),
               const SizedBox(height: 16),
               TextField(
                 controller: amountController,
@@ -52,7 +53,8 @@ class _TopupsPageState extends ConsumerState<TopupsPage> {
                 decoration: const InputDecoration(
                   labelText: 'Amount to credit',
                   // Lets staff correct a figure that does not match the slip.
-                  helperText: 'Change this if the slip shows a different amount',
+                  helperText:
+                      'Change this if the slip shows a different amount',
                   suffixText: 'Ks',
                 ),
               ),
@@ -65,7 +67,9 @@ class _TopupsPageState extends ConsumerState<TopupsPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AdminTheme.success),
             onPressed: () => Navigator.pop(context, true),
@@ -91,7 +95,8 @@ class _TopupsPageState extends ConsumerState<TopupsPage> {
           );
       _refresh();
       if (mounted) {
-        AdminSnack.success(context, '${Format.money(amount)} credited to ${topup.userEmail}');
+        AdminSnack.success(
+            context, '${Format.money(amount)} credited to ${topup.userEmail}');
       }
     } catch (error) {
       if (mounted) AdminSnack.error(context, error);
@@ -134,8 +139,8 @@ class _TopupsPageState extends ConsumerState<TopupsPage> {
         actions: [
           SearchField(
             hint: 'Request no, reference or email',
-            onChanged: (value) =>
-                setState(() => _filter = TopupFilter(status: _filter.status, query: value)),
+            onChanged: (value) => setState(() =>
+                _filter = TopupFilter(status: _filter.status, query: value)),
           ),
           const SizedBox(width: 12),
           IconButton(
@@ -197,8 +202,8 @@ class _TopupsPageState extends ConsumerState<TopupsPage> {
   Widget _chip(TopupStatus? status, String label) => ChoiceChip(
         label: Text(label),
         selected: _filter.status == status,
-        onSelected: (_) =>
-            setState(() => _filter = TopupFilter(status: status, query: _filter.query)),
+        onSelected: (_) => setState(
+            () => _filter = TopupFilter(status: status, query: _filter.query)),
       );
 }
 
@@ -263,14 +268,15 @@ class _TopupCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(Format.money(topup.amount), style: theme.textTheme.titleLarge),
+                      Text(Format.money(topup.amount),
+                          style: theme.textTheme.titleLarge),
                       const SizedBox(width: 12),
                       StatusBadge(status: topup.status.name.toUpperCase()),
                       const Spacer(),
                       Text(
                         Format.dateTime(topup.createdAt),
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -281,28 +287,37 @@ class _TopupCard extends StatelessWidget {
                     children: [
                       _Field(label: 'Request', value: topup.requestNo),
                       _Field(label: 'Method', value: topup.paymentMethodName),
-                      _Field(label: 'Reference', value: topup.referenceNo, copyable: true),
+                      _Field(
+                          label: 'Reference',
+                          value: topup.referenceNo,
+                          copyable: true),
                       _Field(label: 'Customer', value: topup.userEmail ?? '—'),
                       if ((topup.senderName ?? '').isNotEmpty)
                         _Field(label: 'Sender', value: topup.senderName!),
                       if ((topup.senderPhone ?? '').isNotEmpty)
-                        _Field(label: 'Sender phone', value: topup.senderPhone!, copyable: true),
+                        _Field(
+                            label: 'Sender phone',
+                            value: topup.senderPhone!,
+                            copyable: true),
                     ],
                   ),
                   if ((topup.adminNote ?? '').isNotEmpty) ...[
                     const SizedBox(height: 10),
-                    Text('Note: ${topup.adminNote}', style: theme.textTheme.bodySmall),
+                    Text('Note: ${topup.adminNote}',
+                        style: theme.textTheme.bodySmall),
                   ],
                   if (pending) ...[
                     const SizedBox(height: 16),
                     busy
                         ? const SizedBox(
-                            width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2))
                         : Row(
                             children: [
                               FilledButton.icon(
-                                style:
-                                    FilledButton.styleFrom(backgroundColor: AdminTheme.success),
+                                style: FilledButton.styleFrom(
+                                    backgroundColor: AdminTheme.success),
                                 onPressed: onApprove,
                                 icon: const Icon(Icons.check_rounded, size: 18),
                                 label: const Text('Approve'),
@@ -353,7 +368,8 @@ class _TopupCard extends StatelessWidget {
 }
 
 class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.value, this.copyable = false});
+  const _Field(
+      {required this.label, required this.value, this.copyable = false});
 
   final String label;
   final String value;
@@ -367,8 +383,8 @@ class _Field extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(label,
-            style:
-                theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            style: theme.textTheme.labelSmall
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [

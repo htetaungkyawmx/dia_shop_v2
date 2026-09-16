@@ -124,20 +124,25 @@ class DashboardPage extends ConsumerWidget {
               const SizedBox(height: 20),
               PanelCard(
                 title: 'Revenue · last 30 days',
-                child: SizedBox(height: 240, child: _RevenueChart(points: data.revenueSeries)),
+                child: SizedBox(
+                    height: 240,
+                    child: _RevenueChart(points: data.revenueSeries)),
               ),
               const SizedBox(height: 20),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final side = constraints.maxWidth > 1000;
                   final children = [
-                    Expanded(flex: 3, child: _TopSellers(sellers: data.topSellers)),
+                    Expanded(
+                        flex: 3, child: _TopSellers(sellers: data.topSellers)),
                     SizedBox(width: side ? 20 : 0, height: side ? 0 : 20),
                     Expanded(flex: 2, child: _LowStock(items: data.lowStock)),
                   ];
                   return side
                       ? IntrinsicHeight(
-                          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: children))
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: children))
                       : Column(children: [
                           _TopSellers(sellers: data.topSellers),
                           const SizedBox(height: 20),
@@ -171,7 +176,8 @@ class _ActionRequired extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.notifications_active_rounded, color: AdminTheme.warning),
+          const Icon(Icons.notifications_active_rounded,
+              color: AdminTheme.warning),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
@@ -207,10 +213,12 @@ class _RevenueChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (points.isEmpty) {
-      return const AdminEmpty(icon: Icons.show_chart_rounded, title: 'No revenue yet');
+      return const AdminEmpty(
+          icon: Icons.show_chart_rounded, title: 'No revenue yet');
     }
 
-    final maxRevenue = points.map((p) => p.revenue).fold<int>(0, (a, b) => a > b ? a : b);
+    final maxRevenue =
+        points.map((p) => p.revenue).fold<int>(0, (a, b) => a > b ? a : b);
     // Leave headroom above the tallest point so the line never touches the top.
     final maxY = maxRevenue == 0 ? 10000.0 : maxRevenue * 1.25;
 
@@ -221,19 +229,24 @@ class _RevenueChart extends StatelessWidget {
         gridData: FlGridData(
           drawVerticalLine: false,
           horizontalInterval: maxY / 4,
-          getDrawingHorizontalLine: (_) => FlLine(color: theme.dividerColor, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) =>
+              FlLine(color: theme.dividerColor, strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 52,
               interval: maxY / 4,
               getTitlesWidget: (value, meta) => Text(
-                value >= 1000 ? '${(value / 1000).round()}k' : value.round().toString(),
+                value >= 1000
+                    ? '${(value / 1000).round()}k'
+                    : value.round().toString(),
                 style: theme.textTheme.labelSmall,
               ),
             ),
@@ -246,11 +259,14 @@ class _RevenueChart extends StatelessWidget {
               interval: 7,
               getTitlesWidget: (value, meta) {
                 final index = value.round();
-                if (index < 0 || index >= points.length) return const SizedBox.shrink();
+                if (index < 0 || index >= points.length) {
+                  return const SizedBox.shrink();
+                }
                 final parts = points[index].date.split('-');
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text('${parts[2]}/${parts[1]}', style: theme.textTheme.labelSmall),
+                  child: Text('${parts[2]}/${parts[1]}',
+                      style: theme.textTheme.labelSmall),
                 );
               },
             ),
@@ -308,13 +324,15 @@ class _TopSellers extends StatelessWidget {
       title: 'Best sellers · 30 days',
       padding: EdgeInsets.zero,
       child: sellers.isEmpty
-          ? const AdminEmpty(icon: Icons.leaderboard_rounded, title: 'No sales yet')
+          ? const AdminEmpty(
+              icon: Icons.leaderboard_rounded, title: 'No sales yet')
           : Column(
               children: [
                 for (final seller in sellers)
                   ListTile(
                     dense: true,
-                    title: Text('${seller.productName} · ${seller.variantName}'),
+                    title:
+                        Text('${seller.productName} · ${seller.variantName}'),
                     subtitle: Text('${seller.quantity} sold'),
                     trailing: Text(
                       Format.money(seller.revenue),
@@ -351,14 +369,18 @@ class _LowStock extends StatelessWidget {
                       item.remaining == 0
                           ? Icons.error_rounded
                           : Icons.warning_amber_rounded,
-                      color: item.remaining == 0 ? AdminTheme.danger : AdminTheme.warning,
+                      color: item.remaining == 0
+                          ? AdminTheme.danger
+                          : AdminTheme.warning,
                       size: 20,
                     ),
                     title: Text(item.variantName),
                     subtitle: Text(item.productName),
                     trailing: StatusBadge(
                       status: item.remaining == 0 ? 'REJECTED' : 'PENDING',
-                      label: item.remaining == 0 ? 'Out' : '${item.remaining} left',
+                      label: item.remaining == 0
+                          ? 'Out'
+                          : '${item.remaining} left',
                     ),
                     onTap: () => context.go('/products'),
                   ),

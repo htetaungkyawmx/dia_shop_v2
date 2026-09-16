@@ -33,7 +33,7 @@ public final class OrderDtos {
     }
 
     public record OrderItemResponse(
-            Long id, Long variantId, String productName, String variantName, String imageUrl,
+            Long id, Long variantId, String productSlug, String productName, String variantName, String imageUrl,
             long unitPrice, int quantity, long lineTotal,
             Map<String, String> fieldValues,
             String deliveredCode, String deliveredSecret

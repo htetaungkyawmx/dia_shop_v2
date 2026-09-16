@@ -35,8 +35,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
         actions: [
           SearchField(
             hint: 'Order no, email or name',
-            onChanged: (value) =>
-                setState(() => _filter = OrderFilter(status: _filter.status, query: value)),
+            onChanged: (value) => setState(() =>
+                _filter = OrderFilter(status: _filter.status, query: value)),
           ),
           const SizedBox(width: 12),
           IconButton(
@@ -101,7 +101,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                           ? const AdminEmpty(
                               icon: Icons.touch_app_rounded,
                               title: 'Select an order',
-                              message: 'Pick an order on the left to review and act on it.',
+                              message:
+                                  'Pick an order on the left to review and act on it.',
                             )
                           : OrderDetailPanel(
                               orderId: _selected!.id,
@@ -126,8 +127,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     return ChoiceChip(
       label: Text(label),
       selected: selected,
-      onSelected: (_) =>
-          setState(() => _filter = OrderFilter(status: status, query: _filter.query)),
+      onSelected: (_) => setState(
+          () => _filter = OrderFilter(status: status, query: _filter.query)),
     );
   }
 
@@ -147,7 +148,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
 }
 
 class _OrderRow extends StatelessWidget {
-  const _OrderRow({required this.order, required this.selected, required this.onTap});
+  const _OrderRow(
+      {required this.order, required this.selected, required this.onTap});
 
   final Order order;
   final bool selected;
@@ -193,7 +195,8 @@ class _OrderRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(order.userName ?? '—', style: theme.textTheme.bodyMedium),
+                    Text(order.userName ?? '—',
+                        style: theme.textTheme.bodyMedium),
                     Text(
                       order.userEmail ?? '',
                       maxLines: 1,
@@ -213,7 +216,9 @@ class _OrderRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              SizedBox(width: 108, child: StatusBadge(status: order.status.wireValue)),
+              SizedBox(
+                  width: 108,
+                  child: StatusBadge(status: order.status.wireValue)),
               SizedBox(
                 width: 88,
                 child: Text(
@@ -234,7 +239,8 @@ class _OrderRow extends StatelessWidget {
 /// Detail + actions for one order. Used inline on wide screens and in a sheet
 /// on narrow ones, so there is only one implementation of the workflow.
 class OrderDetailPanel extends ConsumerStatefulWidget {
-  const OrderDetailPanel({super.key, required this.orderId, required this.onChanged});
+  const OrderDetailPanel(
+      {super.key, required this.orderId, required this.onChanged});
 
   final int orderId;
   final ValueChanged<Order> onChanged;
@@ -253,7 +259,8 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
       ref.invalidate(orderProvider(widget.orderId));
       widget.onChanged(order);
       if (mounted) {
-        AdminSnack.success(context, 'Order ${order.orderNo} is now ${order.status.wireValue}');
+        AdminSnack.success(
+            context, 'Order ${order.orderNo} is now ${order.status.wireValue}');
       }
     } catch (error) {
       if (mounted) AdminSnack.error(context, error);
@@ -287,8 +294,8 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
                           Text(data.orderNo, style: theme.textTheme.titleLarge),
                           Text(
                             Format.dateTime(data.createdAt),
-                            style: theme.textTheme.bodySmall
-                                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
@@ -303,8 +310,10 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(data.userName ?? '—', style: theme.textTheme.titleSmall),
-                      Text(data.userEmail ?? '', style: theme.textTheme.bodyMedium),
+                      Text(data.userName ?? '—',
+                          style: theme.textTheme.titleSmall),
+                      Text(data.userEmail ?? '',
+                          style: theme.textTheme.bodyMedium),
                     ],
                   ),
                 ),
@@ -323,7 +332,8 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Total', style: theme.textTheme.titleSmall),
-                          Text(Format.money(data.total), style: theme.textTheme.titleMedium),
+                          Text(Format.money(data.total),
+                              style: theme.textTheme.titleMedium),
                         ],
                       ),
                     ],
@@ -348,7 +358,8 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
                       children: [
                         if ((data.rejectReason ?? '').isNotEmpty)
                           Text('Reason: ${data.rejectReason}'),
-                        if ((data.adminNote ?? '').isNotEmpty) Text(data.adminNote!),
+                        if ((data.adminNote ?? '').isNotEmpty)
+                          Text(data.adminNote!),
                       ],
                     ),
                   ),
@@ -369,7 +380,9 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
               child: _busy
                   ? const Center(
                       child: SizedBox(
-                        width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2)),
                     )
                   : Wrap(
                       spacing: 10,
@@ -378,8 +391,10 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
                       children: [
                         if (data.status == OrderStatus.pending)
                           OutlinedButton.icon(
-                            onPressed: () => _run(() => api.processOrder(data.id)),
-                            icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                            onPressed: () =>
+                                _run(() => api.processOrder(data.id)),
+                            icon:
+                                const Icon(Icons.play_arrow_rounded, size: 18),
                             label: const Text('Start'),
                           ),
                         if (data.status.isOpen)
@@ -397,7 +412,8 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
                                 confirmColor: AdminTheme.danger,
                               );
                               if (reason == null) return;
-                              await _run(() => api.rejectOrder(data.id, reason, null));
+                              await _run(
+                                  () => api.rejectOrder(data.id, reason, null));
                             },
                             icon: const Icon(Icons.close_rounded, size: 18),
                             label: const Text('Reject'),
@@ -427,12 +443,14 @@ class _OrderDetailPanelState extends ConsumerState<OrderDetailPanel> {
                               final note = await promptForNote(
                                 context,
                                 title: 'Mark delivered',
-                                message: 'Confirm the customer has received this order.',
+                                message:
+                                    'Confirm the customer has received this order.',
                                 confirmLabel: 'Mark delivered',
                                 confirmColor: AdminTheme.success,
                               );
                               if (note == null) return;
-                              await _run(() => api.completeOrder(data.id, note));
+                              await _run(
+                                  () => api.completeOrder(data.id, note));
                             },
                             icon: const Icon(Icons.check_rounded, size: 18),
                             label: const Text('Mark delivered'),
@@ -465,7 +483,8 @@ class _ItemBlock extends StatelessWidget {
                 style: theme.textTheme.titleSmall,
               ),
             ),
-            Text(Format.money(item.lineTotal), style: theme.textTheme.bodyMedium),
+            Text(Format.money(item.lineTotal),
+                style: theme.textTheme.bodyMedium),
           ],
         ),
         if (item.fieldValues.isNotEmpty) ...[
@@ -486,7 +505,8 @@ class _ItemBlock extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: SelectableText(entry.value, style: theme.textTheme.titleSmall),
+                    child: SelectableText(entry.value,
+                        style: theme.textTheme.titleSmall),
                   ),
                   IconButton(
                     tooltip: 'Copy',
@@ -494,7 +514,9 @@ class _ItemBlock extends StatelessWidget {
                     icon: const Icon(Icons.copy_rounded, size: 15),
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: entry.value));
-                      if (context.mounted) AdminSnack.success(context, 'Copied');
+                      if (context.mounted) {
+                        AdminSnack.success(context, 'Copied');
+                      }
                     },
                   ),
                 ],
@@ -504,7 +526,8 @@ class _ItemBlock extends StatelessWidget {
         if (item.hasCode) ...[
           const SizedBox(height: 8),
           Text('Delivered codes', style: theme.textTheme.labelLarge),
-          for (final code in item.codes) SelectableText(code, style: theme.textTheme.bodyMedium),
+          for (final code in item.codes)
+            SelectableText(code, style: theme.textTheme.bodyMedium),
         ],
       ],
     );

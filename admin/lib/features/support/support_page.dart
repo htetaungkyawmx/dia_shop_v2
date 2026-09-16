@@ -34,7 +34,9 @@ class _SupportPageState extends ConsumerState<SupportPage> {
     if (reply == null || reply.isEmpty) return;
 
     try {
-      await ref.read(apiProvider).replyTicket(ticket.id, reply: reply, status: 'ANSWERED');
+      await ref
+          .read(apiProvider)
+          .replyTicket(ticket.id, reply: reply, status: 'ANSWERED');
       _refresh();
       if (mounted) AdminSnack.success(context, 'Reply sent');
     } catch (error) {
@@ -66,7 +68,12 @@ class _SupportPageState extends ConsumerState<SupportPage> {
             child: Wrap(
               spacing: 8,
               children: [
-                for (final entry in {null: 'All', 'OPEN': 'Open', 'ANSWERED': 'Answered', 'CLOSED': 'Closed'}.entries)
+                for (final entry in {
+                  null: 'All',
+                  'OPEN': 'Open',
+                  'ANSWERED': 'Answered',
+                  'CLOSED': 'Closed'
+                }.entries)
                   ChoiceChip(
                     label: Text(entry.value),
                     selected: _status == entry.key,
@@ -103,14 +110,16 @@ class _SupportPageState extends ConsumerState<SupportPage> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: Text(ticket.subject, style: theme.textTheme.titleSmall),
+                                  child: Text(ticket.subject,
+                                      style: theme.textTheme.titleSmall),
                                 ),
                                 StatusBadge(status: ticket.status),
                                 const SizedBox(width: 12),
                                 Text(
                                   Format.relative(ticket.createdAt),
-                                  style: theme.textTheme.bodySmall
-                                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                      color:
+                                          theme.colorScheme.onSurfaceVariant),
                                 ),
                               ],
                             ),
@@ -118,8 +127,8 @@ class _SupportPageState extends ConsumerState<SupportPage> {
                             Text(
                               '${ticket.userName ?? ''} · ${ticket.userEmail ?? ''}'
                               '${ticket.orderNo == null ? '' : ' · ${ticket.orderNo}'}',
-                              style: theme.textTheme.bodySmall
-                                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant),
                             ),
                             const SizedBox(height: 12),
                             Text(ticket.message),
@@ -129,17 +138,20 @@ class _SupportPageState extends ConsumerState<SupportPage> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: AdminTheme.success.withValues(alpha: 0.08),
+                                  color: AdminTheme.success
+                                      .withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                      color: AdminTheme.success.withValues(alpha: 0.25)),
+                                      color: AdminTheme.success
+                                          .withValues(alpha: 0.25)),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text('Our reply',
                                         style: theme.textTheme.labelLarge
-                                            ?.copyWith(color: AdminTheme.success)),
+                                            ?.copyWith(
+                                                color: AdminTheme.success)),
                                     const SizedBox(height: 4),
                                     Text(ticket.adminReply!),
                                   ],
@@ -152,7 +164,8 @@ class _SupportPageState extends ConsumerState<SupportPage> {
                               child: FilledButton.icon(
                                 onPressed: () => _reply(ticket),
                                 icon: const Icon(Icons.reply_rounded, size: 18),
-                                label: Text(ticket.answered ? 'Reply again' : 'Reply'),
+                                label: Text(
+                                    ticket.answered ? 'Reply again' : 'Reply'),
                               ),
                             ),
                           ],

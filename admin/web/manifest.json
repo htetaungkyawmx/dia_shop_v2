@@ -1,11 +1,11 @@
 {
-    "name": "Dia Shop Admin",
-    "short_name": "Dia Admin",
+    "name": "Game Store Admin",
+    "short_name": "GS Admin",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0D0F15",
     "theme_color": "#4F46E5",
-    "description": "Dia Shop staff panel.",
+    "description": "Game Store staff panel.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

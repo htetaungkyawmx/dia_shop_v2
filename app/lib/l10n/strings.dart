@@ -10,13 +10,14 @@ class Strings {
 
   static const supportedLocales = [Locale('my'), Locale('en')];
 
-  static Strings of(BuildContext context) => Localizations.of<Strings>(context, Strings) ?? const Strings();
+  static Strings of(BuildContext context) =>
+      Localizations.of<Strings>(context, Strings) ?? const Strings();
 
   bool get isBurmese => false;
   String get localeName => 'English';
 
   // --- generic
-  String get appName => 'Dia Shop';
+  String get appName => 'Game Store';
   String get retry => 'Try again';
   String get cancel => 'Cancel';
   String get confirm => 'Confirm';
@@ -48,7 +49,8 @@ class Strings {
   String get signInSubtitle => 'Sign in to top up and track your orders.';
   String get signUpSubtitle => 'It takes less than a minute.';
   String get changePassword => 'Change password';
-  String get passwordRule => 'At least 8 characters, with a letter and a number.';
+  String get passwordRule =>
+      'At least 8 characters, with a letter and a number.';
   String get emailRequired => 'Enter your email';
   String get emailInvalid => 'That email does not look right';
   String get passwordRequired => 'Enter your password';
@@ -71,7 +73,8 @@ class Strings {
   String get searchHint => 'Search games, gift cards, apps';
   String get maintenanceTitle => 'Under maintenance';
   String get noProducts => 'Nothing here yet';
-  String get noProductsBody => 'New items are added often. Please check back soon.';
+  String get noProductsBody =>
+      'New items are added often. Please check back soon.';
 
   // --- product
   String get choosePackage => 'Choose a package';
@@ -99,7 +102,8 @@ class Strings {
   String shortfall(String amount) => 'You need $amount more.';
   String get topUpNow => 'Top up now';
   String get orderPlaced => 'Order placed';
-  String get orderPlacedBody => 'We are processing your order. You will get a notification when it is done.';
+  String get orderPlacedBody =>
+      'We are processing your order. You will get a notification when it is done.';
   String get orderDelivered => 'Delivered!';
   String get orderDeliveredBody => 'Your code is ready below.';
   String get viewOrder => 'View order';
@@ -113,7 +117,8 @@ class Strings {
   String get noOrders => 'No orders yet';
   String get noOrdersBody => 'When you buy something it will show up here.';
   String get cancelOrder => 'Cancel order';
-  String get cancelOrderConfirm => 'Cancel this order? The money goes back to your wallet right away.';
+  String get cancelOrderConfirm =>
+      'Cancel this order? The money goes back to your wallet right away.';
   String get yourCode => 'Your code';
   String get rejectedReason => 'Reason';
   String get adminNote => 'Note from us';
@@ -145,7 +150,8 @@ class Strings {
   String get changeSlip => 'Change screenshot';
   String get submitTopup => 'Submit for review';
   String get topupSubmitted => 'Top-up submitted';
-  String get topupSubmittedBody => 'We usually confirm within a few minutes. You will get a notification.';
+  String get topupSubmittedBody =>
+      'We usually confirm within a few minutes. You will get a notification.';
   String get topupPending => 'Waiting for review';
   String get topupApproved => 'Approved';
   String get topupRejected => 'Rejected';
@@ -168,7 +174,8 @@ class Strings {
   // --- notifications
   String get markAllRead => 'Mark all read';
   String get noNotifications => 'No notifications';
-  String get noNotificationsBody => 'Order updates and offers will appear here.';
+  String get noNotificationsBody =>
+      'Order updates and offers will appear here.';
 
   // --- support
   String get newTicket => 'New message';
@@ -178,6 +185,51 @@ class Strings {
   String get ticketSent => 'Message sent';
   String get noTickets => 'No messages yet';
   String get ourReply => 'Our reply';
+
+  // --- website layout
+  String get tagline =>
+      'Game top-ups, gift cards and premium apps — fast and safe.';
+  String get popularGames => 'Popular games';
+  String get giftCardsAndApps => 'Gift cards & premium apps';
+  String get whyChooseUs => 'Why Game Store';
+  String get featureInstantTitle => 'Fast delivery';
+  String get featureInstantBody => 'Most orders are done within minutes.';
+  String get featureSecureTitle => 'Safe wallet';
+  String get featureSecureBody =>
+      'Every kyat is tracked in your wallet history.';
+  String get featureSupportTitle => 'Real support';
+  String get featureSupportBody => 'Message us any time an order needs help.';
+  String get featurePriceTitle => 'Fair prices';
+  String get featurePriceBody => 'Bonus packages and regular deals.';
+  String get howToBuy => 'How to buy';
+  String get stepTopUpTitle => 'Top up your wallet';
+  String get stepTopUpBody =>
+      'Transfer with KBZPay, Wave or AYA and upload the screenshot.';
+  String get stepChooseTitle => 'Choose a package';
+  String get stepChooseBody => 'Pick your game and the amount you want.';
+  String get stepIdTitle => 'Enter your Player ID';
+  String get stepIdBody => 'Double-check it — that is where we send it.';
+  String get stepDoneTitle => 'Receive it';
+  String get stepDoneBody => 'We notify you the moment it is delivered.';
+  String get footerShop => 'Shop';
+  String get footerAccount => 'Account';
+  String get footerHelp => 'Help';
+  String get footerPayments => 'We accept';
+  String get allRightsReserved => 'All rights reserved.';
+  String get deals => 'Deals';
+  String get viewAll => 'View all';
+  String get buyAgain => 'Buy again';
+  String get recentOrders => 'Your recent orders';
+  String get faq => 'FAQ';
+  String get forgotPassword => 'Forgot password?';
+  String get forgotPasswordBody =>
+      'For your security, passwords are reset by our support team. Send us a message with the email you signed up with.';
+  String get memberSince => 'Member since';
+  String get totalSpent => 'Total spent';
+  String get completedOrders => 'Completed orders';
+  String get changePhoto => 'Change photo';
+  String get popularBadge => 'Popular';
+  String get savedIds => 'Use a saved ID';
 }
 
 class BurmeseStrings extends Strings {
@@ -288,7 +340,8 @@ class BurmeseStrings extends Strings {
   @override
   String get noProducts => 'ဘာမှ မရှိသေးပါ';
   @override
-  String get noProductsBody => 'ပစ္စည်းအသစ်များ မကြာခဏ ထည့်ပါသည်။ ခဏနေ ပြန်ကြည့်ပါ။';
+  String get noProductsBody =>
+      'ပစ္စည်းအသစ်များ မကြာခဏ ထည့်ပါသည်။ ခဏနေ ပြန်ကြည့်ပါ။';
 
   @override
   String get choosePackage => 'အထုပ် ရွေးပါ';
@@ -338,7 +391,8 @@ class BurmeseStrings extends Strings {
   @override
   String get orderPlaced => 'အော်ဒါ တင်ပြီးပါပြီ';
   @override
-  String get orderPlacedBody => 'ဆောင်ရွက်နေပါသည်။ ပြီးစီးလျှင် အကြောင်းကြားပါမည်။';
+  String get orderPlacedBody =>
+      'ဆောင်ရွက်နေပါသည်။ ပြီးစီးလျှင် အကြောင်းကြားပါမည်။';
   @override
   String get orderDelivered => 'ပေးပို့ပြီးပါပြီ!';
   @override
@@ -363,7 +417,8 @@ class BurmeseStrings extends Strings {
   @override
   String get cancelOrder => 'အော်ဒါ ပယ်ဖျက်ရန်';
   @override
-  String get cancelOrderConfirm => 'ဤအော်ဒါကို ပယ်ဖျက်မလား? ငွေကို ချက်ချင်း ပြန်ထည့်ပေးပါမည်။';
+  String get cancelOrderConfirm =>
+      'ဤအော်ဒါကို ပယ်ဖျက်မလား? ငွေကို ချက်ချင်း ပြန်ထည့်ပေးပါမည်။';
   @override
   String get yourCode => 'သင့်ကုဒ်';
   @override
@@ -424,7 +479,8 @@ class BurmeseStrings extends Strings {
   @override
   String get topupSubmitted => 'တင်ပြပြီးပါပြီ';
   @override
-  String get topupSubmittedBody => 'မိနစ်ပိုင်းအတွင်း အတည်ပြုပေးပါမည်။ အကြောင်းကြားပါမည်။';
+  String get topupSubmittedBody =>
+      'မိနစ်ပိုင်းအတွင်း အတည်ပြုပေးပါမည်။ အကြောင်းကြားပါမည်။';
   @override
   String get topupPending => 'စစ်ဆေးနေဆဲ';
   @override
@@ -464,7 +520,8 @@ class BurmeseStrings extends Strings {
   @override
   String get noNotifications => 'အကြောင်းကြားချက် မရှိပါ';
   @override
-  String get noNotificationsBody => 'အော်ဒါ အခြေအနေနှင့် အထူးကမ်းလှမ်းချက်များ ဤနေရာတွင် ပေါ်ပါမည်။';
+  String get noNotificationsBody =>
+      'အော်ဒါ အခြေအနေနှင့် အထူးကမ်းလှမ်းချက်များ ဤနေရာတွင် ပေါ်ပါမည်။';
 
   @override
   String get newTicket => 'စာအသစ်';
@@ -480,13 +537,99 @@ class BurmeseStrings extends Strings {
   String get noTickets => 'စာ မရှိသေးပါ';
   @override
   String get ourReply => 'ကျွန်ုပ်တို့၏ အဖြေ';
+
+  @override
+  String get tagline =>
+      'ဂိမ်းငွေဖြည့်၊ လက်ဆောင်ကတ်နှင့် Premium အက်ပ်များ — မြန်ဆန်၊ စိတ်ချရ။';
+  @override
+  String get popularGames => 'လူကြိုက်များသော ဂိမ်းများ';
+  @override
+  String get giftCardsAndApps => 'လက်ဆောင်ကတ်နှင့် Premium အက်ပ်များ';
+  @override
+  String get whyChooseUs => 'Game Store ကို ဘာကြောင့် ရွေးသင့်လဲ';
+  @override
+  String get featureInstantTitle => 'မြန်ဆန်စွာ ပို့ပေး';
+  @override
+  String get featureInstantBody =>
+      'အော်ဒါအများစုကို မိနစ်ပိုင်းအတွင်း ပြီးစီးပါသည်။';
+  @override
+  String get featureSecureTitle => 'စိတ်ချရသော ပိုက်ဆံအိတ်';
+  @override
+  String get featureSecureBody => 'ငွေအဝင်အထွက် တိုင်းကို မှတ်တမ်းတင်ထားပါသည်။';
+  @override
+  String get featureSupportTitle => 'အမြဲကူညီပေး';
+  @override
+  String get featureSupportBody =>
+      'အော်ဒါနှင့်ပတ်သက်၍ အချိန်မရွေး ဆက်သွယ်နိုင်ပါသည်။';
+  @override
+  String get featurePriceTitle => 'သင့်တင့်သော ဈေးနှုန်း';
+  @override
+  String get featurePriceBody => 'Bonus အထုပ်များနှင့် အထူးလျှော့ဈေးများ။';
+  @override
+  String get howToBuy => 'ဝယ်ယူနည်း';
+  @override
+  String get stepTopUpTitle => 'ပိုက်ဆံအိတ်ထဲ ငွေဖြည့်ပါ';
+  @override
+  String get stepTopUpBody =>
+      'KBZPay၊ Wave သို့မဟုတ် AYA နှင့် လွှဲပြီး screenshot တင်ပါ။';
+  @override
+  String get stepChooseTitle => 'အထုပ် ရွေးပါ';
+  @override
+  String get stepChooseBody => 'ဂိမ်းနှင့် လိုချင်သည့် ပမာဏကို ရွေးပါ။';
+  @override
+  String get stepIdTitle => 'Player ID ထည့်ပါ';
+  @override
+  String get stepIdBody =>
+      'မှန်မမှန် ပြန်စစ်ပါ — ထို ID သို့ ပို့ပေးမည်ဖြစ်သည်။';
+  @override
+  String get stepDoneTitle => 'လက်ခံရယူပါ';
+  @override
+  String get stepDoneBody => 'ပို့ပြီးသည်နှင့် ချက်ချင်း အကြောင်းကြားပါမည်။';
+  @override
+  String get footerShop => 'ဈေးဆိုင်';
+  @override
+  String get footerAccount => 'အကောင့်';
+  @override
+  String get footerHelp => 'အကူအညီ';
+  @override
+  String get footerPayments => 'လက်ခံသော ငွေပေးချေမှု';
+  @override
+  String get allRightsReserved => 'မူပိုင်ခွင့်အားလုံး ရယူထားသည်။';
+  @override
+  String get deals => 'အထူးလျှော့ဈေး';
+  @override
+  String get viewAll => 'အားလုံးကြည့်ရန်';
+  @override
+  String get buyAgain => 'ထပ်ဝယ်မည်';
+  @override
+  String get recentOrders => 'မကြာသေးမီက အော်ဒါများ';
+  @override
+  String get faq => 'မေးလေ့ရှိသော မေးခွန်းများ';
+  @override
+  String get forgotPassword => 'စကားဝှက် မေ့နေပါသလား?';
+  @override
+  String get forgotPasswordBody =>
+      'လုံခြုံရေးအတွက် စကားဝှက်ကို ကျွန်ုပ်တို့၏ support အဖွဲ့မှ ပြန်သတ်မှတ်ပေးပါသည်။ စာရင်းသွင်းခဲ့သော အီးမေးလ်နှင့်အတူ ဆက်သွယ်ပါ။';
+  @override
+  String get memberSince => 'အဖွဲ့ဝင်ဖြစ်သည့်နေ့';
+  @override
+  String get totalSpent => 'စုစုပေါင်း သုံးစွဲငွေ';
+  @override
+  String get completedOrders => 'ပြီးစီးသော အော်ဒါ';
+  @override
+  String get changePhoto => 'ဓာတ်ပုံ ပြောင်းရန်';
+  @override
+  String get popularBadge => 'လူကြိုက်များ';
+  @override
+  String get savedIds => 'သိမ်းထားသော ID သုံးရန်';
 }
 
 class StringsDelegate extends LocalizationsDelegate<Strings> {
   const StringsDelegate();
 
   @override
-  bool isSupported(Locale locale) => locale.languageCode == 'my' || locale.languageCode == 'en';
+  bool isSupported(Locale locale) =>
+      locale.languageCode == 'my' || locale.languageCode == 'en';
 
   @override
   Future<Strings> load(Locale locale) async =>

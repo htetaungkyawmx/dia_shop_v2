@@ -1,6 +1,6 @@
 {
-    "name": "Dia Shop",
-    "short_name": "Dia Shop",
+    "name": "Game Store",
+    "short_name": "Game Store",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0E1016",

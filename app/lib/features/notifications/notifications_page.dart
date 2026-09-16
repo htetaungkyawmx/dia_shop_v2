@@ -8,6 +8,7 @@ import '../../l10n/strings.dart';
 import '../../models/misc.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 
 class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});
@@ -17,20 +18,18 @@ class NotificationsPage extends ConsumerWidget {
     final strings = Strings.of(context);
     final notifications = ref.watch(notificationsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(strings.notifications),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await ref.read(miscRepositoryProvider).markAllRead();
-              ref.invalidate(notificationsProvider);
-              ref.invalidate(unreadCountProvider);
-            },
-            child: Text(strings.markAllRead),
-          ),
-        ],
-      ),
+    return AppPage(
+      title: strings.notifications,
+      actions: [
+        TextButton(
+          onPressed: () async {
+            await ref.read(miscRepositoryProvider).markAllRead();
+            ref.invalidate(notificationsProvider);
+            ref.invalidate(unreadCountProvider);
+          },
+          child: Text(strings.markAllRead),
+        ),
+      ],
       body: MaxWidthBody(
         child: notifications.when(
           loading: () => ListView.separated(
@@ -39,8 +38,9 @@ class NotificationsPage extends ConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (_, __) => const ShimmerBox(height: 80),
           ),
-          error: (error, _) =>
-              ErrorView(error: error, onRetry: () => ref.invalidate(notificationsProvider)),
+          error: (error, _) => ErrorView(
+              error: error,
+              onRetry: () => ref.invalidate(notificationsProvider)),
           data: (page) {
             if (page.items.isEmpty) {
               return EmptyView(
@@ -117,8 +117,9 @@ class _NotificationCard extends ConsumerWidget {
               Container(
                 width: 40,
                 height: 40,
-                decoration:
-                    BoxDecoration(color: color.withValues(alpha: 0.14), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.14),
+                    shape: BoxShape.circle),
                 child: Icon(
                   switch (notification.type) {
                     'ORDER' => Icons.receipt_long_rounded,
@@ -141,8 +142,9 @@ class _NotificationCard extends ConsumerWidget {
                           child: Text(
                             notification.title,
                             style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight:
-                                  notification.read ? FontWeight.w600 : FontWeight.w800,
+                              fontWeight: notification.read
+                                  ? FontWeight.w600
+                                  : FontWeight.w800,
                             ),
                           ),
                         ),

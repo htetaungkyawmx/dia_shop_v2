@@ -24,7 +24,8 @@ enum OrderStatus {
         OrderStatus.refunded => 'REFUNDED',
       };
 
-  bool get isOpen => this == OrderStatus.pending || this == OrderStatus.processing;
+  bool get isOpen =>
+      this == OrderStatus.pending || this == OrderStatus.processing;
 
   bool get canCancel => this == OrderStatus.pending;
 }
@@ -39,6 +40,7 @@ class OrderItem {
     required this.quantity,
     required this.lineTotal,
     this.imageUrl,
+    this.productSlug,
     this.fieldValues = const {},
     this.deliveredCode,
     this.deliveredSecret,
@@ -47,6 +49,9 @@ class OrderItem {
   final int id;
   final int variantId;
   final String productName;
+
+  /// Null for orders placed before the API returned it.
+  final String? productSlug;
   final String variantName;
   final int unitPrice;
   final int quantity;
@@ -58,12 +63,14 @@ class OrderItem {
 
   bool get hasCode => (deliveredCode ?? '').isNotEmpty;
 
-  List<String> get codes => (deliveredCode ?? '').split('\n').where((c) => c.isNotEmpty).toList();
+  List<String> get codes =>
+      (deliveredCode ?? '').split('\n').where((c) => c.isNotEmpty).toList();
 
   factory OrderItem.fromJson(Map<String, dynamic> json) => OrderItem(
         id: (json['id'] as num).toInt(),
         variantId: (json['variantId'] as num).toInt(),
         productName: json['productName'] as String,
+        productSlug: json['productSlug'] as String?,
         variantName: json['variantName'] as String,
         unitPrice: (json['unitPrice'] as num).toInt(),
         quantity: (json['quantity'] as num).toInt(),
@@ -126,8 +133,9 @@ class Order {
         customerNote: json['customerNote'] as String?,
         adminNote: json['adminNote'] as String?,
         rejectReason: json['rejectReason'] as String?,
-        processedAt:
-            json['processedAt'] == null ? null : DateTime.parse(json['processedAt'] as String),
+        processedAt: json['processedAt'] == null
+            ? null
+            : DateTime.parse(json['processedAt'] as String),
         userEmail: json['userEmail'] as String?,
         userName: json['userName'] as String?,
       );

@@ -68,6 +68,13 @@ public class AdminUserController {
         return adminUserService.update(id, request, currentUserService.require(principal));
     }
 
+    @Operation(summary = "Give a customer a temporary password when they forget theirs")
+    @PostMapping("/users/{id}/reset-password")
+    public java.util.Map<String, String> resetPassword(@CurrentUser AuthUser principal, @PathVariable Long id) {
+        return java.util.Map.of("temporaryPassword",
+                adminUserService.resetPassword(id, currentUserService.require(principal)));
+    }
+
     @Operation(summary = "Create an admin account (super admin only)")
     @PostMapping("/staff")
     public ResponseEntity<AdminUserResponse> createStaff(@CurrentUser AuthUser principal,

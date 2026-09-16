@@ -14,7 +14,6 @@ import '../features/topups/topups_page.dart';
 import '../features/users/users_page.dart';
 import '../providers/providers.dart';
 
-
 /// Re-runs the redirect when the session changes.
 ///
 /// The router is built once and kept; watching [authProvider] here instead
@@ -35,47 +34,65 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final auth = ref.read(authProvider);
-      // Hold on the splash until the stored session has been checked.
-      // Without this the shell renders first, fires its dashboard request
-      // while signed out, and only then redirects to the sign-in screen.
-      if (auth.isLoading) {
-        return state.matchedLocation == '/splash' ? null : '/splash';
+      final location = state.matchedLocation;
+      if (auth.isLoading && !auth.hasValue) {
+        if (location == '/splash') return null;
+        return Uri(
+            path: '/splash',
+            queryParameters: {'from': state.uri.toString()}).toString();
       }
+      final from = state.uri.queryParameters['from'];
+      final back = (from != null &&
+              from.startsWith('/') &&
+              !from.startsWith('//') &&
+              !from.startsWith('/splash') &&
+              !from.startsWith('/login'))
+          ? from
+          : '/';
       final signedIn = auth.value != null;
-      if (!signedIn) {
-        return state.matchedLocation == '/login' ? null : '/login';
-      }
-      if (state.matchedLocation == '/login' || state.matchedLocation == '/splash') {
-        return '/';
-      }
+      if (!signedIn) return location == '/login' ? null : '/login';
+      if (location == '/login' || location == '/splash') return back;
       return null;
     },
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => AdminShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) =>
+            AdminShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(routes: [
-            GoRoute(path: '/', builder: (context, state) => const DashboardPage()),
+            GoRoute(
+                path: '/', builder: (context, state) => const DashboardPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/orders', builder: (context, state) => const OrdersPage()),
+            GoRoute(
+                path: '/orders',
+                builder: (context, state) => const OrdersPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/topups', builder: (context, state) => const TopupsPage()),
+            GoRoute(
+                path: '/topups',
+                builder: (context, state) => const TopupsPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/products', builder: (context, state) => const ProductsPage()),
+            GoRoute(
+                path: '/products',
+                builder: (context, state) => const ProductsPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/users', builder: (context, state) => const UsersPage()),
+            GoRoute(
+                path: '/users', builder: (context, state) => const UsersPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/support', builder: (context, state) => const SupportPage()),
+            GoRoute(
+                path: '/support',
+                builder: (context, state) => const SupportPage()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/settings', builder: (context, state) => const SettingsPage()),
+            GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsPage()),
           ]),
         ],
       ),

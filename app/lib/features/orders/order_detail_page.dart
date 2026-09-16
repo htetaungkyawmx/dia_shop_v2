@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
 import '../../core/format.dart';
@@ -8,6 +9,7 @@ import '../../l10n/strings.dart';
 import '../../models/order.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 import 'order_status_ui.dart';
 
 class OrderDetailPage extends ConsumerWidget {
@@ -23,7 +25,9 @@ class OrderDetailPage extends ConsumerWidget {
         title: Text(strings.cancelOrder),
         content: Text(strings.cancelOrderConfirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(strings.close)),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(strings.close)),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(strings.confirm),
@@ -51,8 +55,8 @@ class OrderDetailPage extends ConsumerWidget {
     final strings = Strings.of(context);
     final order = ref.watch(orderProvider(orderId));
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.orderNumber)),
+    return AppPage(
+      title: strings.orderNumber,
       body: MaxWidthBody(
         child: order.when(
           loading: () => ListView(
@@ -63,8 +67,9 @@ class OrderDetailPage extends ConsumerWidget {
               ShimmerBox(height: 180, radius: AppTheme.radius),
             ],
           ),
-          error: (error, _) =>
-              ErrorView(error: error, onRetry: () => ref.invalidate(orderProvider(orderId))),
+          error: (error, _) => ErrorView(
+              error: error,
+              onRetry: () => ref.invalidate(orderProvider(orderId))),
           data: (data) => RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(orderProvider(orderId));
@@ -85,11 +90,18 @@ class OrderDetailPage extends ConsumerWidget {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        _InfoRow(label: strings.orderNumber, value: data.orderNo, copyable: true),
+                        _InfoRow(
+                            label: strings.orderNumber,
+                            value: data.orderNo,
+                            copyable: true),
                         const SizedBox(height: 10),
-                        _InfoRow(label: strings.orderDate, value: Format.dateTime(data.createdAt)),
+                        _InfoRow(
+                            label: strings.orderDate,
+                            value: Format.dateTime(data.createdAt)),
                         const SizedBox(height: 10),
-                        _InfoRow(label: strings.subtotal, value: Format.money(data.subtotal)),
+                        _InfoRow(
+                            label: strings.subtotal,
+                            value: Format.money(data.subtotal)),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Divider(),
@@ -133,7 +145,8 @@ class OrderDetailPage extends ConsumerWidget {
                     onPressed: () => _cancel(context, ref),
                     icon: const Icon(Icons.close_rounded, size: 18),
                     label: Text(strings.cancelOrder),
-                    style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                    style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.error),
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -169,8 +182,10 @@ class _StatusHeader extends StatelessWidget {
           Container(
             width: 46,
             height: 46,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.18), shape: BoxShape.circle),
-            child: Icon(OrderStatusUi.icon(order.status), color: color, size: 22),
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.18), shape: BoxShape.circle),
+            child:
+                Icon(OrderStatusUi.icon(order.status), color: color, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -231,18 +246,32 @@ class _ItemCard extends StatelessWidget {
                       Text(item.productName, style: theme.textTheme.titleSmall),
                       Text(
                         '${item.variantName} × ${item.quantity}',
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   Format.money(item.lineTotal),
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ],
             ),
+            if (item.productSlug != null) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  style:
+                      OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
+                  onPressed: () => context.push('/product/${item.productSlug}'),
+                  icon: const Icon(Icons.replay_rounded, size: 18),
+                  label: Text(strings.buyAgain),
+                ),
+              ),
+            ],
             if (item.fieldValues.isNotEmpty) ...[
               const SizedBox(height: 12),
               const Divider(),
@@ -250,7 +279,10 @@ class _ItemCard extends StatelessWidget {
               for (final entry in item.fieldValues.entries)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
-                  child: _InfoRow(label: _label(entry.key), value: entry.value, copyable: true),
+                  child: _InfoRow(
+                      label: _label(entry.key),
+                      value: entry.value,
+                      copyable: true),
                 ),
             ],
             if (item.hasCode) ...[
@@ -271,7 +303,8 @@ class _ItemCard extends StatelessWidget {
                         Expanded(
                           child: SelectableText(
                             code,
-                            style: theme.textTheme.titleSmall?.copyWith(letterSpacing: 0.6),
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(letterSpacing: 0.6),
                           ),
                         ),
                         IconButton(
@@ -279,7 +312,9 @@ class _ItemCard extends StatelessWidget {
                           icon: const Icon(Icons.copy_rounded, size: 18),
                           onPressed: () async {
                             await Clipboard.setData(ClipboardData(text: code));
-                            if (context.mounted) AppSnack.success(context, strings.copied);
+                            if (context.mounted) {
+                              AppSnack.success(context, strings.copied);
+                            }
                           },
                         ),
                       ],
@@ -287,7 +322,8 @@ class _ItemCard extends StatelessWidget {
                   ),
                 ),
               if (item.deliveredSecret != null)
-                Text('PIN: ${item.deliveredSecret}', style: theme.textTheme.bodySmall),
+                Text('PIN: ${item.deliveredSecret}',
+                    style: theme.textTheme.bodySmall),
             ],
           ],
         ),
@@ -297,7 +333,8 @@ class _ItemCard extends StatelessWidget {
 
   static String _label(String key) => key
       .split('_')
-      .map((part) => part.isEmpty ? part : part[0].toUpperCase() + part.substring(1))
+      .map((part) =>
+          part.isEmpty ? part : part[0].toUpperCase() + part.substring(1))
       .join(' ');
 }
 
@@ -332,7 +369,9 @@ class _InfoRow extends StatelessWidget {
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: (emphasise ? theme.textTheme.titleMedium : theme.textTheme.bodyMedium)
+            style: (emphasise
+                    ? theme.textTheme.titleMedium
+                    : theme.textTheme.bodyMedium)
                 ?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
@@ -354,7 +393,8 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _NoteCard extends StatelessWidget {
-  const _NoteCard({required this.title, required this.body, required this.color});
+  const _NoteCard(
+      {required this.title, required this.body, required this.color});
 
   final String title;
   final String body;
@@ -374,7 +414,8 @@ class _NoteCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: theme.textTheme.labelLarge?.copyWith(color: color)),
+          Text(title,
+              style: theme.textTheme.labelLarge?.copyWith(color: color)),
           const SizedBox(height: 4),
           Text(body, style: theme.textTheme.bodyMedium),
         ],

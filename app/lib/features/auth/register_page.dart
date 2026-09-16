@@ -44,7 +44,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           );
       final auth = ref.read(authProvider);
       if (auth.hasError) throw auth.error!;
-      if (mounted) context.go('/');
+      // The router redirects to wherever the visitor came from.
     } catch (error) {
       if (mounted) AppSnack.error(context, error);
     } finally {
@@ -72,7 +72,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   labelText: strings.displayName,
                   prefixIcon: const Icon(Icons.person_outline_rounded),
                 ),
-                validator: (value) => AuthValidators.notEmpty(value, strings.nameRequired),
+                validator: (value) =>
+                    AuthValidators.notEmpty(value, strings.nameRequired),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -83,8 +84,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   labelText: strings.email,
                   prefixIcon: const Icon(Icons.alternate_email_rounded),
                 ),
-                validator: (value) =>
-                    AuthValidators.email(value, strings.emailRequired, strings.emailInvalid),
+                validator: (value) => AuthValidators.email(
+                    value, strings.emailRequired, strings.emailInvalid),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -114,8 +115,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         : Icons.visibility_off_outlined),
                   ),
                 ),
-                validator: (value) =>
-                    AuthValidators.password(value, strings.passwordRequired, strings.passwordRule),
+                validator: (value) => AuthValidators.password(
+                    value, strings.passwordRequired, strings.passwordRule),
               ),
             ],
           ),
@@ -125,7 +126,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           onPressed: _busy ? null : _submit,
           child: _busy
               ? const SizedBox(
-                  width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2))
               : Text(strings.signUp),
         ),
       ],
@@ -139,7 +142,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
           ),
           TextButton(
-            onPressed: () => context.canPop() ? context.pop() : context.go('/login'),
+            onPressed: () =>
+                context.canPop() ? context.pop() : context.go('/login'),
             child: Text(strings.signIn),
           ),
         ],

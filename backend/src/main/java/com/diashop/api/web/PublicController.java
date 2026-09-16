@@ -62,7 +62,7 @@ public class PublicController {
     @GetMapping("/config")
     public AppConfigResponse config() {
         return new AppConfigResponse(
-                settingsService.get(SettingsService.APP_NAME, "Dia Shop"),
+                settingsService.get(SettingsService.APP_NAME, "Game Store"),
                 settingsService.getBoolean(SettingsService.MAINTENANCE, false),
                 settingsService.get(SettingsService.MAINTENANCE_MESSAGE, ""),
                 settingsService.getLong(SettingsService.TOPUP_MIN, 1000),

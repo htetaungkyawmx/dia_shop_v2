@@ -106,6 +106,31 @@ public class AdminUserService {
         return toResponse(userRepository.save(user));
     }
 
+    /**
+     * Replaces a user's password with a random temporary one, signs them out
+     * everywhere and returns the temporary password so staff can pass it on.
+     * Used instead of e-mail resets, which need a mail server this shop does
+     * not run.
+     */
+    @Transactional
+    public String resetPassword(Long userId, User admin) {
+        User user = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User"));
+        if (user.isAdmin() && admin.getRole() != Role.SUPER_ADMIN) {
+            throw ApiException.forbidden("Only a super admin can reset a staff password.");
+        }
+        String temporary = TemporaryPassword.generate();
+        user.setPasswordHash(passwordEncoder.encode(temporary));
+        userRepository.save(user);
+        refreshTokenRepository.revokeAllForUser(userId, Instant.now());
+
+        notificationService.notify(user, NotificationType.SYSTEM,
+                "Password reset",
+                "Your password was reset by support. Sign in with the temporary password you were given, then change it.",
+                Map.of("screen", "profile"));
+        auditService.record(admin, "PASSWORD_RESET", "User", userId, user.getEmail());
+        return temporary;
+    }
+
     @Transactional
     public AdminUserResponse createStaff(CreateStaffRequest request, User admin) {
         if (admin.getRole() != Role.SUPER_ADMIN) {

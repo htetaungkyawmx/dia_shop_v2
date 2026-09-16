@@ -30,12 +30,12 @@ class StatusBadge extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// PENDING -> "Pending", CODE_POOL -> "Code pool".
-String prettyStatus(String value) =>
-    value.isEmpty ? value : value[0] + value.substring(1).toLowerCase().replaceAll('_', ' ');
+String prettyStatus(String value) => value.isEmpty
+    ? value
+    : value[0] + value.substring(1).toLowerCase().replaceAll('_', ' ');
 
 /// Headline number card used across the dashboard.
 class StatCard extends StatelessWidget {
@@ -91,7 +91,8 @@ class StatCard extends StatelessWidget {
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 2),
               Text(
@@ -140,7 +141,8 @@ class PanelCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(18, 16, 12, 14),
             child: Row(
               children: [
-                Expanded(child: Text(title, style: theme.textTheme.titleMedium)),
+                Expanded(
+                    child: Text(title, style: theme.textTheme.titleMedium)),
                 ...actions,
               ],
             ),
@@ -200,9 +202,11 @@ class AdminError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 34, color: theme.colorScheme.error),
+            Icon(Icons.error_outline_rounded,
+                size: 34, color: theme.colorScheme.error),
             const SizedBox(height: 10),
-            Text(failure.message, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+            Text(failure.message,
+                textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
             if (onRetry != null) ...[
               const SizedBox(height: 14),
               OutlinedButton.icon(
@@ -219,7 +223,8 @@ class AdminError extends StatelessWidget {
 }
 
 class AdminEmpty extends StatelessWidget {
-  const AdminEmpty({super.key, required this.icon, required this.title, this.message});
+  const AdminEmpty(
+      {super.key, required this.icon, required this.title, this.message});
 
   final IconData icon;
   final String title;
@@ -240,8 +245,8 @@ class AdminEmpty extends StatelessWidget {
             Text(
               message!,
               textAlign: TextAlign.center,
-              style:
-                  theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           ],
         ],
@@ -252,7 +257,11 @@ class AdminEmpty extends StatelessWidget {
 
 /// Debounced search box shared by every list screen.
 class SearchField extends StatefulWidget {
-  const SearchField({super.key, required this.hint, required this.onChanged, this.width = 280});
+  const SearchField(
+      {super.key,
+      required this.hint,
+      required this.onChanged,
+      this.width = 280});
 
   final String hint;
   final ValueChanged<String?> onChanged;
@@ -313,13 +322,14 @@ class AdminSnack {
   static void success(BuildContext context, String message) =>
       _show(context, message, AdminTheme.success, Icons.check_circle_rounded);
 
-  static void error(BuildContext context, Object error) =>
-      _show(context, ApiException.from(error).message, AdminTheme.danger, Icons.error_rounded);
+  static void error(BuildContext context, Object error) => _show(context,
+      ApiException.from(error).message, AdminTheme.danger, Icons.error_rounded);
 
   static void info(BuildContext context, String message) =>
       _show(context, message, AdminTheme.info, Icons.info_rounded);
 
-  static void _show(BuildContext context, String message, Color color, IconData icon) {
+  static void _show(
+      BuildContext context, String message, Color color, IconData icon) {
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
     messenger
@@ -328,7 +338,9 @@ class AdminSnack {
         content: Row(children: [
           Icon(icon, color: Colors.white, size: 18),
           const SizedBox(width: 10),
-          Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
+          Expanded(
+              child:
+                  Text(message, style: const TextStyle(color: Colors.white))),
         ]),
         backgroundColor: color,
       ));
@@ -369,7 +381,9 @@ Future<String?> promptForNote(
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel')),
         FilledButton(
           style: confirmColor == null
               ? null

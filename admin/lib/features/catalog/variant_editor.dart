@@ -14,7 +14,8 @@ class VariantEditor extends ConsumerStatefulWidget {
   final int productId;
   final AdminVariant? variant;
 
-  static Future<bool?> show(BuildContext context, {required int productId, AdminVariant? variant}) {
+  static Future<bool?> show(BuildContext context,
+      {required int productId, AdminVariant? variant}) {
     return showDialog<bool>(
       context: context,
       builder: (context) => Dialog(
@@ -61,7 +62,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
     _nameMy = TextEditingController(text: v?.nameMy ?? '');
     _bonus = TextEditingController(text: v?.bonusText ?? '');
     _price = TextEditingController(text: '${v?.price ?? ''}');
-    _compareAt = TextEditingController(text: v?.compareAtPrice == null ? '' : '${v!.compareAtPrice}');
+    _compareAt = TextEditingController(
+        text: v?.compareAtPrice == null ? '' : '${v!.compareAtPrice}');
     _cost = TextEditingController(text: '${v?.costPrice ?? 0}');
     _threshold = TextEditingController(text: '${v?.lowStockThreshold ?? 5}');
     _maxPerOrder = TextEditingController(text: '${v?.maxPerOrder ?? 10}');
@@ -75,8 +77,18 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
   @override
   void dispose() {
     for (final c in [
-      _sku, _name, _nameMy, _bonus, _price, _compareAt, _cost,
-      _threshold, _maxPerOrder, _popularity, _sortOrder, _initialStock,
+      _sku,
+      _name,
+      _nameMy,
+      _bonus,
+      _price,
+      _compareAt,
+      _cost,
+      _threshold,
+      _maxPerOrder,
+      _popularity,
+      _sortOrder,
+      _initialStock,
     ]) {
       c.dispose();
     }
@@ -93,8 +105,9 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
       'nameMy': _nameMy.text.trim().isEmpty ? null : _nameMy.text.trim(),
       'bonusText': _bonus.text.trim().isEmpty ? null : _bonus.text.trim(),
       'price': int.parse(_price.text.trim()),
-      'compareAtPrice':
-          _compareAt.text.trim().isEmpty ? null : int.parse(_compareAt.text.trim()),
+      'compareAtPrice': _compareAt.text.trim().isEmpty
+          ? null
+          : int.parse(_compareAt.text.trim()),
       'costPrice': int.tryParse(_cost.text.trim()) ?? 0,
       'stockType': _stockType,
       'stockQuantity': int.tryParse(_initialStock.text.trim()) ?? 0,
@@ -112,7 +125,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
             variantId: widget.variant?.id,
           );
       if (mounted) {
-        AdminSnack.success(context, _isNew ? 'Package created' : 'Package updated');
+        AdminSnack.success(
+            context, _isNew ? 'Package created' : 'Package updated');
         Navigator.pop(context, true);
       }
     } catch (error) {
@@ -164,7 +178,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                           labelText: 'Name',
                           hintText: '86 Diamonds',
                         ),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -175,7 +190,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                           labelText: 'SKU',
                           hintText: 'MLBB-86',
                         ),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                     ),
                   ],
@@ -186,7 +202,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                     Expanded(
                       child: TextFormField(
                         controller: _nameMy,
-                        decoration: const InputDecoration(labelText: 'Burmese name (optional)'),
+                        decoration: const InputDecoration(
+                            labelText: 'Burmese name (optional)'),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -206,7 +223,9 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: _moneyField(_price, 'Selling price', required: true)),
+                    Expanded(
+                        child: _moneyField(_price, 'Selling price',
+                            required: true)),
                     const SizedBox(width: 14),
                     Expanded(
                       child: _moneyField(_compareAt, 'Was price (optional)'),
@@ -242,10 +261,12 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                     ),
                     DropdownMenuItem(
                       value: 'CODE_POOL',
-                      child: Text('Code pool — pre-loaded keys, delivered instantly'),
+                      child: Text(
+                          'Code pool — pre-loaded keys, delivered instantly'),
                     ),
                   ],
-                  onChanged: (value) => setState(() => _stockType = value ?? 'UNLIMITED'),
+                  onChanged: (value) =>
+                      setState(() => _stockType = value ?? 'UNLIMITED'),
                 ),
                 if (showInitialStock) ...[
                   const SizedBox(height: 14),
@@ -253,7 +274,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                     controller: _initialStock,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(labelText: 'Starting stock'),
+                    decoration:
+                        const InputDecoration(labelText: 'Starting stock'),
                   ),
                 ],
                 if (!_isNew && !showInitialStock && _stockType != 'UNLIMITED')
@@ -268,9 +290,11 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    Expanded(child: _numberField(_threshold, 'Low stock alert at')),
+                    Expanded(
+                        child: _numberField(_threshold, 'Low stock alert at')),
                     const SizedBox(width: 14),
-                    Expanded(child: _numberField(_maxPerOrder, 'Max per order')),
+                    Expanded(
+                        child: _numberField(_maxPerOrder, 'Max per order')),
                   ],
                 ),
                 const SizedBox(height: 22),
@@ -278,7 +302,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: _numberField(_popularity, 'Popularity (0–100)')),
+                    Expanded(
+                        child: _numberField(_popularity, 'Popularity (0–100)')),
                     const SizedBox(width: 14),
                     Expanded(child: _numberField(_sortOrder, 'Sort order')),
                   ],
@@ -309,7 +334,9 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                 onPressed: _busy ? null : _save,
                 child: _busy
                     ? const SizedBox(
-                        width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : Text(_isNew ? 'Create package' : 'Save changes'),
               ),
             ],
@@ -319,7 +346,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
     );
   }
 
-  Widget _moneyField(TextEditingController controller, String label, {bool required = false}) {
+  Widget _moneyField(TextEditingController controller, String label,
+      {bool required = false}) {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.number,

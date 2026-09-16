@@ -72,7 +72,8 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
     _instructions = TextEditingController(text: p?.instructions ?? '');
     _instructionsMy = TextEditingController(text: p?.instructionsMy ?? '');
     _sortOrder = TextEditingController(text: '${p?.sortOrder ?? 0}');
-    _categoryId = p?.categoryId ?? (widget.categories.isEmpty ? 0 : widget.categories.first.id);
+    _categoryId = p?.categoryId ??
+        (widget.categories.isEmpty ? 0 : widget.categories.first.id);
     _fulfillment = p?.fulfillmentType ?? 'MANUAL';
     _featured = p?.featured ?? false;
     _active = p?.active ?? true;
@@ -82,8 +83,16 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
   @override
   void dispose() {
     for (final c in [
-      _slug, _name, _nameMy, _description, _descriptionMy,
-      _imageUrl, _bannerUrl, _instructions, _instructionsMy, _sortOrder,
+      _slug,
+      _name,
+      _nameMy,
+      _description,
+      _descriptionMy,
+      _imageUrl,
+      _bannerUrl,
+      _instructions,
+      _instructionsMy,
+      _sortOrder,
     ]) {
       c.dispose();
     }
@@ -118,7 +127,8 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
     try {
       await ref.read(apiProvider).saveProduct(body, id: widget.product?.id);
       if (mounted) {
-        AdminSnack.success(context, _isNew ? 'Product created' : 'Product updated');
+        AdminSnack.success(
+            context, _isNew ? 'Product created' : 'Product updated');
         Navigator.pop(context, true);
       }
     } catch (error) {
@@ -179,7 +189,8 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                       child: TextFormField(
                         controller: _name,
                         decoration: const InputDecoration(labelText: 'Name'),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -191,9 +202,11 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                           helperText: 'lowercase-with-dashes',
                         ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[a-z0-9-]')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-z0-9-]')),
                         ],
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                     ),
                   ],
@@ -204,20 +217,24 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                     Expanded(
                       child: TextFormField(
                         controller: _nameMy,
-                        decoration: const InputDecoration(labelText: 'Burmese name (optional)'),
+                        decoration: const InputDecoration(
+                            labelText: 'Burmese name (optional)'),
                       ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: DropdownButtonFormField<int>(
                         initialValue: _categoryId == 0 ? null : _categoryId,
-                        decoration: const InputDecoration(labelText: 'Category'),
+                        decoration:
+                            const InputDecoration(labelText: 'Category'),
                         items: [
                           for (final c in widget.categories)
                             DropdownMenuItem(value: c.id, child: Text(c.name)),
                         ],
-                        onChanged: (value) => setState(() => _categoryId = value ?? _categoryId),
-                        validator: (value) => value == null ? 'Pick a category' : null,
+                        onChanged: (value) =>
+                            setState(() => _categoryId = value ?? _categoryId),
+                        validator: (value) =>
+                            value == null ? 'Pick a category' : null,
                       ),
                     ),
                   ],
@@ -229,14 +246,16 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                   items: const [
                     DropdownMenuItem(
                       value: 'MANUAL',
-                      child: Text('Manual — your team delivers after the order'),
+                      child:
+                          Text('Manual — your team delivers after the order'),
                     ),
                     DropdownMenuItem(
                       value: 'CODE_DELIVERY',
                       child: Text('Code delivery — buyer gets a key instantly'),
                     ),
                   ],
-                  onChanged: (value) => setState(() => _fulfillment = value ?? 'MANUAL'),
+                  onChanged: (value) =>
+                      setState(() => _fulfillment = value ?? 'MANUAL'),
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
@@ -248,12 +267,18 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                 TextFormField(
                   controller: _descriptionMy,
                   maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Burmese description'),
+                  decoration:
+                      const InputDecoration(labelText: 'Burmese description'),
                 ),
                 const SizedBox(height: 14),
-                ImageUrlField(controller: _imageUrl, label: 'Product image (square works best)'),
+                ImageUrlField(
+                    controller: _imageUrl,
+                    label: 'Product image (square works best)'),
                 const SizedBox(height: 14),
-                ImageUrlField(controller: _bannerUrl, label: 'Banner image (wide)', folder: 'banners'),
+                ImageUrlField(
+                    controller: _bannerUrl,
+                    label: 'Banner image (wide)',
+                    folder: 'banners'),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _instructions,
@@ -266,13 +291,15 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                 TextFormField(
                   controller: _instructionsMy,
                   maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'How it works · Burmese'),
+                  decoration: const InputDecoration(
+                      labelText: 'How it works · Burmese'),
                 ),
                 const SizedBox(height: 22),
                 Row(
                   children: [
                     Expanded(
-                      child: Text('Customer input fields', style: theme.textTheme.titleSmall),
+                      child: Text('Customer input fields',
+                          style: theme.textTheme.titleSmall),
                     ),
                     TextButton.icon(
                       onPressed: () => _editField(),
@@ -290,7 +317,8 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                 if (_fields.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text('No fields — the buyer just pays and you deliver.'),
+                    child: Text(
+                        'No fields — the buyer just pays and you deliver.'),
                   )
                 else
                   for (var i = 0; i < _fields.length; i++)
@@ -308,12 +336,14 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.edit_outlined, size: 18),
-                              onPressed: () => _editField(existing: _fields[i], index: i),
+                              onPressed: () =>
+                                  _editField(existing: _fields[i], index: i),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                              onPressed: () =>
-                                  setState(() => _fields = [..._fields]..removeAt(i)),
+                              icon: const Icon(Icons.delete_outline_rounded,
+                                  size: 18),
+                              onPressed: () => setState(
+                                  () => _fields = [..._fields]..removeAt(i)),
                             ),
                           ],
                         ),
@@ -326,8 +356,11 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                       child: TextFormField(
                         controller: _sortOrder,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        decoration: const InputDecoration(labelText: 'Sort order'),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration:
+                            const InputDecoration(labelText: 'Sort order'),
                       ),
                     ),
                     const SizedBox(width: 20),
@@ -336,13 +369,15 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                         children: [
                           SwitchListTile(
                             value: _featured,
-                            onChanged: (value) => setState(() => _featured = value),
+                            onChanged: (value) =>
+                                setState(() => _featured = value),
                             title: const Text('Featured on home'),
                             contentPadding: EdgeInsets.zero,
                           ),
                           SwitchListTile(
                             value: _active,
-                            onChanged: (value) => setState(() => _active = value),
+                            onChanged: (value) =>
+                                setState(() => _active = value),
                             title: const Text('Visible in the shop'),
                             contentPadding: EdgeInsets.zero,
                           ),
@@ -370,7 +405,9 @@ class _ProductEditorState extends ConsumerState<ProductEditor> {
                 onPressed: _busy ? null : _save,
                 child: _busy
                     ? const SizedBox(
-                        width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : Text(_isNew ? 'Create product' : 'Save changes'),
               ),
             ],
@@ -437,28 +474,36 @@ class _FieldDialogState extends State<_FieldDialog> {
               children: [
                 TextFormField(
                   controller: _label,
-                  decoration: const InputDecoration(labelText: 'Label', hintText: 'Player ID'),
-                  validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                  decoration: const InputDecoration(
+                      labelText: 'Label', hintText: 'Player ID'),
+                  validator: (v) =>
+                      (v ?? '').trim().isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _key,
                   decoration: const InputDecoration(
                     labelText: 'Key',
-                    helperText: 'lowercase_with_underscores, used in the order record',
+                    helperText:
+                        'lowercase_with_underscores, used in the order record',
                   ),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[a-z0-9_]'))],
-                  validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-z0-9_]'))
+                  ],
+                  validator: (v) =>
+                      (v ?? '').trim().isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _labelMy,
-                  decoration: const InputDecoration(labelText: 'Burmese label (optional)'),
+                  decoration: const InputDecoration(
+                      labelText: 'Burmese label (optional)'),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _placeholder,
-                  decoration: const InputDecoration(labelText: 'Placeholder (optional)'),
+                  decoration: const InputDecoration(
+                      labelText: 'Placeholder (optional)'),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
@@ -468,7 +513,8 @@ class _FieldDialogState extends State<_FieldDialog> {
                     DropdownMenuItem(value: 'TEXT', child: Text('Text')),
                     DropdownMenuItem(value: 'NUMBER', child: Text('Number')),
                     DropdownMenuItem(value: 'EMAIL', child: Text('Email')),
-                    DropdownMenuItem(value: 'SELECT', child: Text('Choice list')),
+                    DropdownMenuItem(
+                        value: 'SELECT', child: Text('Choice list')),
                   ],
                   onChanged: (value) => setState(() => _type = value ?? 'TEXT'),
                 ),
@@ -502,7 +548,9 @@ class _FieldDialogState extends State<_FieldDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel')),
         FilledButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) return;
@@ -512,8 +560,11 @@ class _FieldDialogState extends State<_FieldDialog> {
                 id: widget.field?.id,
                 key: _key.text.trim(),
                 label: _label.text.trim(),
-                labelMy: _labelMy.text.trim().isEmpty ? null : _labelMy.text.trim(),
-                placeholder: _placeholder.text.trim().isEmpty ? null : _placeholder.text.trim(),
+                labelMy:
+                    _labelMy.text.trim().isEmpty ? null : _labelMy.text.trim(),
+                placeholder: _placeholder.text.trim().isEmpty
+                    ? null
+                    : _placeholder.text.trim(),
                 inputType: _type,
                 options: _type == 'SELECT'
                     ? _options.text
@@ -522,7 +573,8 @@ class _FieldDialogState extends State<_FieldDialog> {
                         .where((o) => o.isNotEmpty)
                         .toList()
                     : const [],
-                validationRegex: _regex.text.trim().isEmpty ? null : _regex.text.trim(),
+                validationRegex:
+                    _regex.text.trim().isEmpty ? null : _regex.text.trim(),
                 required: _required,
                 sortOrder: widget.field?.sortOrder ?? 0,
               ),

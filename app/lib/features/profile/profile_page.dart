@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
@@ -8,6 +9,7 @@ import '../../core/format.dart';
 import '../../l10n/strings.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -17,46 +19,37 @@ class ProfilePage extends ConsumerWidget {
     final theme = Theme.of(context);
     final strings = Strings.of(context);
     final user = ref.watch(authProvider).value;
-    final balance = ref.watch(walletProvider).value?.balance ?? user?.balance ?? 0;
+    final balance =
+        ref.watch(walletProvider).value?.balance ?? user?.balance ?? 0;
     final config = ref.watch(appConfigProvider).value;
     final unread = ref.watch(unreadCountProvider).value ?? 0;
 
     if (user == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text(strings.profile)),
+      return AppPage(
+        showBack: false,
+        title: strings.profile,
         body: EmptyView(
           icon: Icons.person_outline_rounded,
           title: strings.signIn,
           message: strings.signInSubtitle,
           action: FilledButton(
-            onPressed: () => context.push('/login'),
+            onPressed: () => pushLogin(context),
             child: Text(strings.signIn),
           ),
         ),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.profile)),
+    return AppPage(
+      showBack: false,
+      title: strings.profile,
       body: MaxWidthBody(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.16),
-                  backgroundImage:
-                      user.photoUrl == null ? null : NetworkImage(user.photoUrl!),
-                  child: user.photoUrl != null
-                      ? null
-                      : Text(
-                          user.initials,
-                          style: theme.textTheme.titleLarge
-                              ?.copyWith(color: theme.colorScheme.primary),
-                        ),
-                ),
+                const _Avatar(),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -65,8 +58,8 @@ class ProfilePage extends ConsumerWidget {
                       Text(user.displayName, style: theme.textTheme.titleLarge),
                       Text(
                         user.email,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -81,6 +74,8 @@ class ProfilePage extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 18),
+            const _StatsRow(),
             const SizedBox(height: 24),
             _Group(
               children: [
@@ -108,7 +103,8 @@ class ProfilePage extends ConsumerWidget {
                 _Tile(
                   icon: Icons.translate_rounded,
                   label: strings.language,
-                  trailing: Text(strings.localeName, style: theme.textTheme.bodyMedium),
+                  trailing: Text(strings.localeName,
+                      style: theme.textTheme.bodyMedium),
                   onTap: () => _pickLanguage(context, ref),
                 ),
                 _Tile(
@@ -133,6 +129,11 @@ class ProfilePage extends ConsumerWidget {
                   icon: Icons.support_agent_rounded,
                   label: strings.support,
                   onTap: () => context.push('/support'),
+                ),
+                _Tile(
+                  icon: Icons.help_outline_rounded,
+                  label: strings.faq,
+                  onTap: () => context.push('/faq'),
                 ),
                 if ((config?.support['messenger'] ?? '').isNotEmpty)
                   _Tile(
@@ -229,7 +230,8 @@ class ProfilePage extends ConsumerWidget {
     }
   }
 
-  static Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+  static Future<void> _confirmSignOut(
+      BuildContext context, WidgetRef ref) async {
     final strings = Strings.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -237,7 +239,9 @@ class ProfilePage extends ConsumerWidget {
         title: Text(strings.signOut),
         content: Text(strings.signOutConfirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(strings.cancel)),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(strings.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(strings.signOut),
@@ -273,7 +277,8 @@ class _Group extends StatelessWidget {
 }
 
 class _Tile extends StatelessWidget {
-  const _Tile({required this.icon, required this.label, this.trailing, this.onTap});
+  const _Tile(
+      {required this.icon, required this.label, this.trailing, this.onTap});
 
   final IconData icon;
   final String label;
@@ -293,6 +298,181 @@ class _Tile extends StatelessWidget {
         ],
       ),
       onTap: onTap,
+    );
+  }
+}
+
+class _Avatar extends ConsumerStatefulWidget {
+  const _Avatar();
+
+  @override
+  ConsumerState<_Avatar> createState() => _AvatarState();
+}
+
+class _AvatarState extends ConsumerState<_Avatar> {
+  bool _uploading = false;
+
+  Future<void> _change() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    setState(() => _uploading = true);
+    try {
+      await ref.read(authProvider.notifier).uploadPhoto(
+            bytes: await picked.readAsBytes(),
+            fileName: picked.name,
+          );
+      if (mounted) {
+        AppSnack.success(context, Strings.of(context).profileUpdated);
+      }
+    } catch (error) {
+      if (mounted) AppSnack.error(context, error);
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final user = ref.watch(authProvider).value;
+    if (user == null) return const SizedBox.shrink();
+
+    return Tooltip(
+      message: Strings.of(context).changePhoto,
+      child: InkWell(
+        onTap: _uploading ? null : _change,
+        customBorder: const CircleBorder(),
+        child: Stack(
+          children: [
+            CircleAvatar(
+              radius: 34,
+              backgroundColor:
+                  theme.colorScheme.primary.withValues(alpha: 0.16),
+              backgroundImage:
+                  user.photoUrl == null ? null : NetworkImage(user.photoUrl!),
+              child: _uploading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : user.photoUrl != null
+                      ? null
+                      : Text(
+                          user.initials,
+                          style: theme.textTheme.titleLarge
+                              ?.copyWith(color: theme.colorScheme.primary),
+                        ),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: theme.scaffoldBackgroundColor, width: 2),
+                ),
+                child: const Icon(Icons.photo_camera_rounded,
+                    size: 13, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatsRow extends ConsumerWidget {
+  const _StatsRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = Strings.of(context);
+    final stats = ref.watch(accountStatsProvider).value;
+    final items = [
+      (
+        strings.totalSpent,
+        stats == null ? '—' : Format.money(stats.totalSpent),
+        Icons.payments_rounded
+      ),
+      (
+        strings.completedOrders,
+        stats == null ? '—' : '${stats.completedOrders}',
+        Icons.check_circle_rounded
+      ),
+      (
+        strings.memberSince,
+        stats?.memberSince == null ? '—' : Format.date(stats!.memberSince!),
+        Icons.event_available_rounded,
+      ),
+    ];
+    return Row(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const SizedBox(width: 10),
+          Expanded(
+              child: _StatCard(
+                  label: items[i].$1,
+                  value: items[i].$2,
+                  icon: items[i].$3,
+                  color: accentFor(i))),
+        ],
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.color});
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusSmall + 2),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(value,
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
     );
   }
 }

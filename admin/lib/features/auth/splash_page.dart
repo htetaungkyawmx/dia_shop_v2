@@ -21,7 +21,8 @@ class SplashPage extends StatelessWidget {
                 color: AdminTheme.brand,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(Icons.shield_moon_rounded, color: Colors.white, size: 28),
+              child: const Icon(Icons.shield_moon_rounded,
+                  color: Colors.white, size: 28),
             ),
             const SizedBox(height: 22),
             const SizedBox(

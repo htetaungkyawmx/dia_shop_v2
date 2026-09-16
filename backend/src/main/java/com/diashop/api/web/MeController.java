@@ -1,5 +1,6 @@
 package com.diashop.api.web;
 
+import com.diashop.api.dto.AuthDtos.AccountStatsResponse;
 import com.diashop.api.dto.AuthDtos.ChangePasswordRequest;
 import com.diashop.api.dto.AuthDtos.RegisterDeviceRequest;
 import com.diashop.api.dto.AuthDtos.UpdateProfileRequest;
@@ -28,10 +29,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeController {
 
     private final AuthService authService;
+    private final com.diashop.api.service.StorageService storageService;
 
     @GetMapping
     public UserResponse me(@CurrentUser AuthUser principal) {
         return authService.me(principal.id());
+    }
+
+    @Operation(summary = "Lifetime spend and order counts for the profile screen")
+    @GetMapping("/stats")
+    public AccountStatsResponse stats(@CurrentUser AuthUser principal) {
+        return authService.stats(principal.id());
+    }
+
+    @Operation(summary = "Upload a profile photo and set it on the account")
+    @PostMapping(value = "/photo", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserResponse uploadPhoto(@CurrentUser AuthUser principal,
+                                    @org.springframework.web.bind.annotation.RequestParam("file")
+                                    org.springframework.web.multipart.MultipartFile file) {
+        return authService.updatePhoto(principal.id(), storageService.store(file, "avatars"));
     }
 
     @PatchMapping

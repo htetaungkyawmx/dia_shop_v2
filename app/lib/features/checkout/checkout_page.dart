@@ -9,6 +9,7 @@ import '../../l10n/strings.dart';
 import '../../models/order.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
@@ -60,7 +61,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     if (lines.isEmpty) return;
     setState(() => _placing = true);
     try {
-      final order = await ref.read(orderRepositoryProvider).create(lines, note: _note.text.trim());
+      final order = await ref
+          .read(orderRepositoryProvider)
+          .create(lines, note: _note.text.trim());
       ref.read(cartProvider.notifier).clear();
       ref.invalidate(walletProvider);
       ref.invalidate(walletTransactionsProvider);
@@ -89,8 +92,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     final lines = ref.watch(cartProvider);
 
     if (lines.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(strings.checkout)),
+      return AppPage(
+        title: strings.checkout,
         body: EmptyView(
           icon: Icons.shopping_bag_outlined,
           title: strings.noProducts,
@@ -104,8 +107,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
     final quote = _quote;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.checkout)),
+    return AppPage(
+      title: strings.checkout,
       body: MaxWidthBody(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -135,7 +138,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           ],
         ),
       ),
-      bottomNavigationBar: quote == null
+      bottomBar: quote == null
           ? null
           : SafeArea(
               child: Container(
@@ -152,17 +155,20 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                               ? const SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.lock_rounded, size: 18),
-                          label: Text('${strings.placeOrder} · ${Format.money(quote.total)}'),
+                          label: Text(
+                              '${strings.placeOrder} · ${Format.money(quote.total)}'),
                         )
                       : Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               quote.shortfall > 0
-                                  ? strings.shortfall(Format.money(quote.shortfall))
+                                  ? strings
+                                      .shortfall(Format.money(quote.shortfall))
                                   : strings.outOfStock,
                               style: theme.textTheme.bodyMedium
                                   ?.copyWith(color: theme.colorScheme.error),
@@ -172,7 +178,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                             if (quote.shortfall > 0)
                               FilledButton.icon(
                                 onPressed: () => context.push('/wallet/topup'),
-                                icon: const Icon(Icons.add_card_rounded, size: 18),
+                                icon: const Icon(Icons.add_card_rounded,
+                                    size: 18),
                                 label: Text(strings.topUpNow),
                               ),
                           ],
@@ -228,7 +235,8 @@ class _CartLineCard extends StatelessWidget {
             ),
             Text(
               Format.money(line.lineTotal),
-              style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w800),
             ),
           ],
         ),
@@ -238,7 +246,8 @@ class _CartLineCard extends StatelessWidget {
 
   static String _label(String key) => key
       .split('_')
-      .map((part) => part.isEmpty ? part : part[0].toUpperCase() + part.substring(1))
+      .map((part) =>
+          part.isEmpty ? part : part[0].toUpperCase() + part.substring(1))
       .join(' ');
 }
 
@@ -263,7 +272,8 @@ class _QuoteCard extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
                     children: [
-                      Icon(Icons.warning_amber_rounded, size: 18, color: theme.colorScheme.error),
+                      Icon(Icons.warning_amber_rounded,
+                          size: 18, color: theme.colorScheme.error),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -277,14 +287,21 @@ class _QuoteCard extends StatelessWidget {
                 ),
             _Row(label: strings.subtotal, value: Format.money(quote.subtotal)),
             const SizedBox(height: 8),
-            _Row(label: strings.walletBalance, value: Format.money(quote.walletBalance)),
-            const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider()),
-            _Row(label: strings.total, value: Format.money(quote.total), emphasise: true),
+            _Row(
+                label: strings.walletBalance,
+                value: Format.money(quote.walletBalance)),
+            const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12), child: Divider()),
+            _Row(
+                label: strings.total,
+                value: Format.money(quote.total),
+                emphasise: true),
             const SizedBox(height: 8),
             _Row(
               label: strings.balanceAfter,
               value: Format.money(quote.balanceAfter),
-              valueColor: quote.balanceAfter < 0 ? theme.colorScheme.error : null,
+              valueColor:
+                  quote.balanceAfter < 0 ? theme.colorScheme.error : null,
             ),
           ],
         ),
@@ -309,14 +326,17 @@ class _Row extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style = emphasise ? theme.textTheme.titleMedium : theme.textTheme.bodyMedium;
+    final style =
+        emphasise ? theme.textTheme.titleMedium : theme.textTheme.bodyMedium;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
             style: style?.copyWith(
                 color: emphasise ? null : theme.colorScheme.onSurfaceVariant)),
-        Text(value, style: style?.copyWith(color: valueColor, fontWeight: FontWeight.w700)),
+        Text(value,
+            style: style?.copyWith(
+                color: valueColor, fontWeight: FontWeight.w700)),
       ],
     );
   }

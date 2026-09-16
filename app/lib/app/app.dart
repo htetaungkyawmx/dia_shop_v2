@@ -16,7 +16,7 @@ class DiaShopApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Dia Shop',
+      title: 'Game Store',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       themeMode: settings.themeMode,
@@ -36,7 +36,8 @@ class DiaShopApp extends ConsumerWidget {
         final media = MediaQuery.of(context);
         return MediaQuery(
           data: media.copyWith(
-            textScaler: media.textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.3),
+            textScaler: media.textScaler
+                .clamp(minScaleFactor: 0.9, maxScaleFactor: 1.3),
           ),
           child: child ?? const SizedBox.shrink(),
         );

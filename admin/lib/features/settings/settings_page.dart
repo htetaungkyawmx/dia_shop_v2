@@ -47,7 +47,8 @@ class SettingsPage extends ConsumerWidget {
                     children: [
                       for (final entry in values.entries)
                         if (entry.key != 'app.maintenance')
-                          _SettingRow(settingKey: entry.key, value: entry.value),
+                          _SettingRow(
+                              settingKey: entry.key, value: entry.value),
                     ],
                   ),
                 ),
@@ -98,20 +99,27 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _editMethod(BuildContext context, WidgetRef ref, PaymentMethod? method) async {
+  Future<void> _editMethod(
+      BuildContext context, WidgetRef ref, PaymentMethod? method) async {
     final code = TextEditingController(text: method?.code ?? '');
     final name = TextEditingController(text: method?.name ?? '');
     final accountName = TextEditingController(text: method?.accountName ?? '');
-    final accountNumber = TextEditingController(text: method?.accountNumber ?? '');
-    final minAmount = TextEditingController(text: '${method?.minAmount ?? 1000}');
-    final maxAmount = TextEditingController(text: '${method?.maxAmount ?? 5000000}');
-    final instructions = TextEditingController(text: method?.instructions ?? '');
-    final instructionsMy = TextEditingController(text: method?.instructionsMy ?? '');
+    final accountNumber =
+        TextEditingController(text: method?.accountNumber ?? '');
+    final minAmount =
+        TextEditingController(text: '${method?.minAmount ?? 1000}');
+    final maxAmount =
+        TextEditingController(text: '${method?.maxAmount ?? 5000000}');
+    final instructions =
+        TextEditingController(text: method?.instructions ?? '');
+    final instructionsMy =
+        TextEditingController(text: method?.instructionsMy ?? '');
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(method == null ? 'Add payment method' : 'Edit ${method.name}'),
+        title:
+            Text(method == null ? 'Add payment method' : 'Edit ${method.name}'),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
           child: SingleChildScrollView(
@@ -123,7 +131,8 @@ class SettingsPage extends ConsumerWidget {
                     Expanded(
                       child: TextField(
                         controller: name,
-                        decoration: const InputDecoration(labelText: 'Display name'),
+                        decoration:
+                            const InputDecoration(labelText: 'Display name'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -143,7 +152,8 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextField(
                   controller: accountNumber,
-                  decoration: const InputDecoration(labelText: 'Account number'),
+                  decoration:
+                      const InputDecoration(labelText: 'Account number'),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -152,7 +162,8 @@ class SettingsPage extends ConsumerWidget {
                       child: TextField(
                         controller: minAmount,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'Min', suffixText: 'Ks'),
+                        decoration: const InputDecoration(
+                            labelText: 'Min', suffixText: 'Ks'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -160,7 +171,8 @@ class SettingsPage extends ConsumerWidget {
                       child: TextField(
                         controller: maxAmount,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'Max', suffixText: 'Ks'),
+                        decoration: const InputDecoration(
+                            labelText: 'Max', suffixText: 'Ks'),
                       ),
                     ),
                   ],
@@ -169,21 +181,27 @@ class SettingsPage extends ConsumerWidget {
                 TextField(
                   controller: instructions,
                   maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Instructions (English)'),
+                  decoration: const InputDecoration(
+                      labelText: 'Instructions (English)'),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: instructionsMy,
                   maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Instructions (Burmese)'),
+                  decoration: const InputDecoration(
+                      labelText: 'Instructions (Burmese)'),
                 ),
               ],
             ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Save')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Save')),
         ],
       ),
     );
@@ -201,7 +219,14 @@ class SettingsPage extends ConsumerWidget {
       'active': true,
     };
     for (final c in [
-      code, name, accountName, accountNumber, minAmount, maxAmount, instructions, instructionsMy,
+      code,
+      name,
+      accountName,
+      accountNumber,
+      minAmount,
+      maxAmount,
+      instructions,
+      instructionsMy,
     ]) {
       c.dispose();
     }
@@ -236,7 +261,8 @@ class _MaintenanceCard extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: (on ? AdminTheme.warning : AdminTheme.success).withValues(alpha: 0.14),
+                color: (on ? AdminTheme.warning : AdminTheme.success)
+                    .withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -271,7 +297,10 @@ class _MaintenanceCard extends ConsumerWidget {
                   ref.invalidate(settingsProvider);
                   if (context.mounted) {
                     AdminSnack.info(
-                        context, value ? 'Shop closed for maintenance' : 'Shop reopened');
+                        context,
+                        value
+                            ? 'Shop closed for maintenance'
+                            : 'Shop reopened');
                   }
                 } catch (error) {
                   if (context.mounted) AdminSnack.error(context, error);
@@ -298,7 +327,8 @@ class _SettingRow extends ConsumerWidget {
       title: Text(settingKey, style: theme.textTheme.bodyMedium),
       subtitle: Text(
         value.isEmpty ? '(empty)' : value,
-        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        style: theme.textTheme.bodySmall
+            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       ),
       trailing: IconButton(
         icon: const Icon(Icons.edit_outlined, size: 18),
@@ -371,10 +401,15 @@ class _BroadcastFormState extends ConsumerState<_BroadcastForm> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Send to every customer?'),
-        content: Text('"${_title.text.trim()}" will appear in everyone\'s notifications.'),
+        content: Text(
+            '"${_title.text.trim()}" will appear in everyone\'s notifications.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Send')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Send')),
         ],
       ),
     );
@@ -382,7 +417,9 @@ class _BroadcastFormState extends ConsumerState<_BroadcastForm> {
 
     setState(() => _busy = true);
     try {
-      await ref.read(apiProvider).broadcast(title: _title.text.trim(), body: _body.text.trim());
+      await ref
+          .read(apiProvider)
+          .broadcast(title: _title.text.trim(), body: _body.text.trim());
       _title.clear();
       _body.clear();
       if (mounted) AdminSnack.success(context, 'Announcement sent');

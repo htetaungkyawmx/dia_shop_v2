@@ -45,7 +45,8 @@ class _ImageUrlFieldState extends ConsumerState<ImageUrlField> {
   }
 
   Future<void> _upload() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600);
+    final picked = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, maxWidth: 1600);
     if (picked == null) return;
 
     setState(() => _uploading = true);
@@ -79,12 +80,14 @@ class _ImageUrlFieldState extends ConsumerState<ImageUrlField> {
             height: 56,
             color: theme.colorScheme.surfaceContainerHighest,
             child: url.isEmpty
-                ? Icon(Icons.image_outlined, color: theme.colorScheme.onSurfaceVariant)
+                ? Icon(Icons.image_outlined,
+                    color: theme.colorScheme.onSurfaceVariant)
                 : CachedNetworkImage(
                     imageUrl: url,
                     fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) =>
-                        Icon(Icons.broken_image_outlined, color: theme.colorScheme.error),
+                    errorWidget: (_, __, ___) => Icon(
+                        Icons.broken_image_outlined,
+                        color: theme.colorScheme.error),
                   ),
           ),
         ),
@@ -102,7 +105,9 @@ class _ImageUrlFieldState extends ConsumerState<ImageUrlField> {
             onPressed: _uploading ? null : _upload,
             icon: _uploading
                 ? const SizedBox(
-                    width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.upload_rounded, size: 18),
             label: const Text('Upload'),
           ),

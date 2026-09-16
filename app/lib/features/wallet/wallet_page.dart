@@ -8,6 +8,7 @@ import '../../l10n/strings.dart';
 import '../../models/wallet.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 
 class WalletPage extends ConsumerWidget {
   const WalletPage({super.key});
@@ -19,8 +20,9 @@ class WalletPage extends ConsumerWidget {
     final transactions = ref.watch(walletTransactionsProvider);
     final topups = ref.watch(topupsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.myWallet)),
+    return AppPage(
+      showBack: false,
+      title: strings.myWallet,
       body: MaxWidthBody(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -43,8 +45,9 @@ class WalletPage extends ConsumerWidget {
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
                 data: (page) {
-                  final pending =
-                      page.items.where((t) => t.status == TopupStatus.pending).toList();
+                  // Most recent five of any status: a customer checking why
+                  // their balance did not change needs to see rejections too.
+                  final pending = page.items.take(5).toList();
                   if (pending.isEmpty) return const SizedBox.shrink();
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,11 +138,13 @@ class _BalanceCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.account_balance_wallet_rounded, color: Colors.white70, size: 18),
+              const Icon(Icons.account_balance_wallet_rounded,
+                  color: Colors.white70, size: 18),
               const SizedBox(width: 8),
               Text(
                 strings.availableBalance,
-                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                style:
+                    theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
               ),
             ],
           ),
@@ -152,7 +157,8 @@ class _BalanceCard extends StatelessWidget {
                 child: SizedBox(
                   width: 22,
                   height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
                 ),
               ),
             )
@@ -211,7 +217,8 @@ class _TransactionTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: (credit ? AppTheme.success : AppTheme.brand).withValues(alpha: 0.14),
+                color: (credit ? AppTheme.success : AppTheme.brand)
+                    .withValues(alpha: 0.14),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -235,7 +242,8 @@ class _TransactionTile extends StatelessWidget {
                     transaction.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -284,7 +292,15 @@ class _TopupTile extends ConsumerWidget {
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            const Icon(Icons.hourglass_top_rounded, color: AppTheme.warning),
+            Icon(
+              switch (topup.status) {
+                TopupStatus.approved => Icons.check_circle_rounded,
+                TopupStatus.rejected => Icons.cancel_rounded,
+                TopupStatus.cancelled => Icons.remove_circle_rounded,
+                TopupStatus.pending => Icons.hourglass_top_rounded,
+              },
+              color: StatusPalette.of(topup.status.name.toUpperCase()),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -292,28 +308,48 @@ class _TopupTile extends ConsumerWidget {
                 children: [
                   Text(
                     '${Format.money(topup.amount)} · ${topup.paymentMethodName}',
-                    style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   Text(
-                    '${topup.requestNo} · ${strings.topupPending}',
+                    '${topup.requestNo} · ${Format.relative(topup.createdAt)}',
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
+                  if ((topup.adminNote ?? '').isNotEmpty &&
+                      topup.status == TopupStatus.rejected)
+                    Text(
+                      topup.adminNote!,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: AppTheme.danger),
+                    ),
                 ],
               ),
             ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  await ref.read(walletRepositoryProvider).cancelTopup(topup.id);
-                  ref.invalidate(topupsProvider);
-                  ref.invalidate(walletProvider);
-                } catch (error) {
-                  if (context.mounted) AppSnack.error(context, error);
-                }
-              },
-              child: Text(strings.cancel),
-            ),
+            if (topup.status != TopupStatus.pending)
+              StatusChip(
+                label: switch (topup.status) {
+                  TopupStatus.approved => strings.topupApproved,
+                  TopupStatus.rejected => strings.topupRejected,
+                  _ => strings.topupCancelled,
+                },
+                color: StatusPalette.of(topup.status.name.toUpperCase()),
+              )
+            else
+              TextButton(
+                onPressed: () async {
+                  try {
+                    await ref
+                        .read(walletRepositoryProvider)
+                        .cancelTopup(topup.id);
+                    ref.invalidate(topupsProvider);
+                    ref.invalidate(walletProvider);
+                  } catch (error) {
+                    if (context.mounted) AppSnack.error(context, error);
+                  }
+                },
+                child: Text(strings.cancel),
+              ),
           ],
         ),
       ),

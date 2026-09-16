@@ -15,7 +15,8 @@ import '../models/wallet.dart';
 
 /// Overridden in main() once the async initialisation is done.
 final sharedPreferencesProvider = Provider<SharedPreferences>(
-  (ref) => throw UnimplementedError('sharedPreferencesProvider must be overridden'),
+  (ref) =>
+      throw UnimplementedError('sharedPreferencesProvider must be overridden'),
 );
 
 final tokenStoreProvider = Provider<TokenStore>(
@@ -26,15 +27,21 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   final tokens = ref.watch(tokenStoreProvider);
   return ApiClient(
     tokens,
-    onSessionExpired: () async => ref.read(authProvider.notifier).handleSessionExpiry(),
+    onSessionExpired: () async =>
+        ref.read(authProvider.notifier).handleSessionExpiry(),
   );
 });
 
-final authRepositoryProvider = Provider((ref) => AuthRepository(ref.watch(apiClientProvider)));
-final catalogRepositoryProvider = Provider((ref) => CatalogRepository(ref.watch(apiClientProvider)));
-final orderRepositoryProvider = Provider((ref) => OrderRepository(ref.watch(apiClientProvider)));
-final walletRepositoryProvider = Provider((ref) => WalletRepository(ref.watch(apiClientProvider)));
-final miscRepositoryProvider = Provider((ref) => MiscRepository(ref.watch(apiClientProvider)));
+final authRepositoryProvider =
+    Provider((ref) => AuthRepository(ref.watch(apiClientProvider)));
+final catalogRepositoryProvider =
+    Provider((ref) => CatalogRepository(ref.watch(apiClientProvider)));
+final orderRepositoryProvider =
+    Provider((ref) => OrderRepository(ref.watch(apiClientProvider)));
+final walletRepositoryProvider =
+    Provider((ref) => WalletRepository(ref.watch(apiClientProvider)));
+final miscRepositoryProvider =
+    Provider((ref) => MiscRepository(ref.watch(apiClientProvider)));
 
 // ------------------------------------------------------------------ settings
 
@@ -44,8 +51,8 @@ class AppSettings {
   final ThemeMode themeMode;
   final Locale locale;
 
-  AppSettings copyWith({ThemeMode? themeMode, Locale? locale}) =>
-      AppSettings(themeMode: themeMode ?? this.themeMode, locale: locale ?? this.locale);
+  AppSettings copyWith({ThemeMode? themeMode, Locale? locale}) => AppSettings(
+      themeMode: themeMode ?? this.themeMode, locale: locale ?? this.locale);
 }
 
 class SettingsNotifier extends Notifier<AppSettings> {
@@ -73,11 +80,15 @@ class SettingsNotifier extends Notifier<AppSettings> {
 
   Future<void> setLocale(Locale locale) async {
     state = state.copyWith(locale: locale);
-    await ref.read(sharedPreferencesProvider).setString(_localeKey, locale.languageCode);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_localeKey, locale.languageCode);
     // Keep the server copy in sync so notifications arrive in the same language.
     if (ref.read(authProvider).value != null) {
       try {
-        await ref.read(authRepositoryProvider).updateProfile(locale: locale.languageCode);
+        await ref
+            .read(authRepositoryProvider)
+            .updateProfile(locale: locale.languageCode);
       } catch (_) {
         // A failed sync is not worth interrupting the user for.
       }
@@ -85,7 +96,8 @@ class SettingsNotifier extends Notifier<AppSettings> {
   }
 }
 
-final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
+final settingsProvider =
+    NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
 
 // ---------------------------------------------------------------------- auth
 
@@ -110,7 +122,9 @@ class AuthNotifier extends AsyncNotifier<AppUser?> {
     required String displayName,
     String? phone,
   }) async {
-    state = const AsyncLoading();
+    // copyWithPrevious keeps hasValue true, so the router does not treat a
+    // sign-in in progress as the cold-start session check.
+    state = const AsyncLoading<AppUser?>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final result = await ref.read(authRepositoryProvider).register(
             email: email,
@@ -124,18 +138,25 @@ class AuthNotifier extends AsyncNotifier<AppUser?> {
   }
 
   Future<void> login({required String email, required String password}) async {
-    state = const AsyncLoading();
+    // copyWithPrevious keeps hasValue true, so the router does not treat a
+    // sign-in in progress as the cold-start session check.
+    state = const AsyncLoading<AppUser?>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
-      final result = await ref.read(authRepositoryProvider).login(email: email, password: password);
+      final result = await ref
+          .read(authRepositoryProvider)
+          .login(email: email, password: password);
       await _store(result);
       return result.user;
     });
   }
 
   Future<void> loginWithGoogle(String idToken) async {
-    state = const AsyncLoading();
+    // copyWithPrevious keeps hasValue true, so the router does not treat a
+    // sign-in in progress as the cold-start session check.
+    state = const AsyncLoading<AppUser?>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
-      final result = await ref.read(authRepositoryProvider).loginWithGoogle(idToken);
+      final result =
+          await ref.read(authRepositoryProvider).loginWithGoogle(idToken);
       await _store(result);
       return result.user;
     });
@@ -174,7 +195,8 @@ class AuthNotifier extends AsyncNotifier<AppUser?> {
     state = AsyncData(user);
   }
 
-  Future<void> updateProfile({String? displayName, String? phone, String? photoUrl}) async {
+  Future<void> updateProfile(
+      {String? displayName, String? phone, String? photoUrl}) async {
     final user = await ref.read(authRepositoryProvider).updateProfile(
           displayName: displayName,
           phone: phone,
@@ -183,7 +205,16 @@ class AuthNotifier extends AsyncNotifier<AppUser?> {
     state = AsyncData(user);
   }
 
+  Future<void> uploadPhoto(
+      {required List<int> bytes, required String fileName}) async {
+    final user = await ref
+        .read(authRepositoryProvider)
+        .uploadPhoto(bytes: bytes, fileName: fileName);
+    state = AsyncData(user);
+  }
+
   void _invalidateUserScopedData() {
+    ref.invalidate(accountStatsProvider);
     ref.invalidate(walletProvider);
     ref.invalidate(walletTransactionsProvider);
     ref.invalidate(ordersProvider);
@@ -195,9 +226,16 @@ class AuthNotifier extends AsyncNotifier<AppUser?> {
   }
 }
 
-final authProvider = AsyncNotifierProvider<AuthNotifier, AppUser?>(AuthNotifier.new);
+final authProvider =
+    AsyncNotifierProvider<AuthNotifier, AppUser?>(AuthNotifier.new);
 
-final isSignedInProvider = Provider<bool>((ref) => ref.watch(authProvider).value != null);
+final isSignedInProvider =
+    Provider<bool>((ref) => ref.watch(authProvider).value != null);
+
+final accountStatsProvider = FutureProvider<AccountStats?>((ref) async {
+  if (!ref.watch(isSignedInProvider)) return null;
+  return ref.watch(authRepositoryProvider).stats();
+});
 
 // ------------------------------------------------------------------- catalog
 
@@ -227,19 +265,27 @@ class ProductQuery {
 
   @override
   bool operator ==(Object other) =>
-      other is ProductQuery && other.category == category && other.search == search;
+      other is ProductQuery &&
+      other.category == category &&
+      other.search == search;
 
   @override
   int get hashCode => Object.hash(category, search);
 }
 
 final productsProvider =
-    FutureProvider.family<List<ProductSummary>, ProductQuery>((ref, query) async {
+    FutureProvider.family<List<ProductSummary>, ProductQuery>(
+        (ref, query) async {
   return ref.watch(catalogRepositoryProvider).products(
         category: query.category,
         query: query.search,
       );
 });
+
+/// Payment accounts are public: the footer lists them for signed-out visitors.
+final publicPaymentMethodsProvider = FutureProvider<List<PaymentMethod>>(
+  (ref) => ref.watch(catalogRepositoryProvider).paymentMethods(),
+);
 
 final productProvider = FutureProvider.family<ProductDetail, String>(
   (ref, slug) => ref.watch(catalogRepositoryProvider).product(slug),
@@ -254,7 +300,8 @@ final walletProvider = FutureProvider<Wallet>((ref) async {
   return ref.watch(walletRepositoryProvider).wallet();
 });
 
-final walletTransactionsProvider = FutureProvider<Paged<WalletTransaction>>((ref) async {
+final walletTransactionsProvider =
+    FutureProvider<Paged<WalletTransaction>>((ref) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
   return ref.watch(walletRepositoryProvider).transactions(size: 50);
 });
@@ -270,7 +317,8 @@ final topupsProvider = FutureProvider<Paged<TopupRequest>>((ref) async {
 
 // -------------------------------------------------------------------- orders
 
-final ordersProvider = FutureProvider.family<Paged<Order>, OrderStatus?>((ref, status) async {
+final ordersProvider =
+    FutureProvider.family<Paged<Order>, OrderStatus?>((ref, status) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
   return ref.watch(orderRepositoryProvider).list(status: status, size: 50);
 });
@@ -281,7 +329,8 @@ final orderProvider = FutureProvider.family<Order, int>(
 
 // ---------------------------------------------------------------------- misc
 
-final notificationsProvider = FutureProvider<Paged<AppNotification>>((ref) async {
+final notificationsProvider =
+    FutureProvider<Paged<AppNotification>>((ref) async {
   if (!ref.watch(isSignedInProvider)) return Paged.empty();
   return ref.watch(miscRepositoryProvider).notifications(size: 50);
 });
@@ -308,12 +357,12 @@ class CartNotifier extends Notifier<List<CartLine>> {
 
   void add(CartLine line) => state = [...state, line];
 
-  void removeAt(int index) =>
-      state = [...state]..removeAt(index);
+  void removeAt(int index) => state = [...state]..removeAt(index);
 
   void clear() => state = const [];
 
   int get total => state.fold(0, (sum, line) => sum + line.lineTotal);
 }
 
-final cartProvider = NotifierProvider<CartNotifier, List<CartLine>>(CartNotifier.new);
+final cartProvider =
+    NotifierProvider<CartNotifier, List<CartLine>>(CartNotifier.new);

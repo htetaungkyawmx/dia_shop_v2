@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme.dart';
+import '../../widgets/layout.dart';
 
 /// Shown for the moment between app start and the first auth answer.
 class SplashPage extends StatelessWidget {
@@ -13,15 +13,7 @@ class SplashPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                gradient: AppTheme.brandGradient,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: const Icon(Icons.diamond_rounded, color: Colors.white, size: 38),
-            ),
+            const AppLogo(size: 120),
             const SizedBox(height: 24),
             const SizedBox(
               width: 22,

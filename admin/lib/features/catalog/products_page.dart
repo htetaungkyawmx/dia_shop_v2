@@ -192,31 +192,35 @@ class _ProductCard extends ConsumerWidget {
         ),
         title: Row(
           children: [
-            Flexible(child: Text(product.name, style: theme.textTheme.titleSmall)),
+            Flexible(
+                child: Text(product.name, style: theme.textTheme.titleSmall)),
             const SizedBox(width: 10),
-            if (!product.active) const StatusBadge(status: 'CANCELLED', label: 'Hidden'),
+            if (!product.active)
+              const StatusBadge(status: 'CANCELLED', label: 'Hidden'),
             if (product.featured) ...[
               const SizedBox(width: 6),
               const StatusBadge(status: 'COMPLETED', label: 'Featured'),
             ],
             if (product.lowStockCount > 0) ...[
               const SizedBox(width: 6),
-              StatusBadge(status: 'PENDING', label: '${product.lowStockCount} low'),
+              StatusBadge(
+                  status: 'PENDING', label: '${product.lowStockCount} low'),
             ],
           ],
         ),
         subtitle: Text(
           '${product.categoryName} · ${product.variants.length} package(s) · '
           '${prettyStatus(product.fulfillmentType)}',
-          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextButton.icon(
               onPressed: () async {
-                final saved =
-                    await ProductEditor.show(context, product: product, categories: categories);
+                final saved = await ProductEditor.show(context,
+                    product: product, categories: categories);
                 if (saved == true) onChanged();
               },
               icon: const Icon(Icons.edit_outlined, size: 17),
@@ -232,7 +236,8 @@ class _ProductCard extends ConsumerWidget {
               const Spacer(),
               TextButton.icon(
                 onPressed: () async {
-                  final saved = await VariantEditor.show(context, productId: product.id);
+                  final saved =
+                      await VariantEditor.show(context, productId: product.id);
                   if (saved == true) onChanged();
                 },
                 icon: const Icon(Icons.add_rounded, size: 17),
@@ -288,7 +293,9 @@ class _VariantRow extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Flexible(child: Text(variant.name, style: theme.textTheme.bodyLarge)),
+                    Flexible(
+                        child: Text(variant.name,
+                            style: theme.textTheme.bodyLarge)),
                     if (!variant.active) ...[
                       const SizedBox(width: 8),
                       const StatusBadge(status: 'CANCELLED', label: 'Hidden'),
@@ -308,7 +315,8 @@ class _VariantRow extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(Format.money(variant.price), style: theme.textTheme.titleSmall),
+                Text(Format.money(variant.price),
+                    style: theme.textTheme.titleSmall),
                 Text(
                   'margin ${Format.money(variant.margin)}',
                   style: theme.textTheme.labelSmall
@@ -332,7 +340,9 @@ class _VariantRow extends ConsumerWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  variant.isUnlimited ? 'Unlimited' : '${variant.available} in stock',
+                  variant.isUnlimited
+                      ? 'Unlimited'
+                      : '${variant.available} in stock',
                   style: theme.textTheme.bodySmall?.copyWith(color: stockColor),
                 ),
               ],
@@ -373,7 +383,8 @@ class _VariantRow extends ConsumerWidget {
                             child: const Text('Cancel'),
                           ),
                           FilledButton(
-                            style: FilledButton.styleFrom(backgroundColor: AdminTheme.danger),
+                            style: FilledButton.styleFrom(
+                                backgroundColor: AdminTheme.danger),
                             onPressed: () => Navigator.pop(context, true),
                             child: const Text('Hide'),
                           ),
@@ -384,7 +395,9 @@ class _VariantRow extends ConsumerWidget {
                     try {
                       await ref.read(apiProvider).archiveVariant(variant.id);
                       onChanged();
-                      if (context.mounted) AdminSnack.success(context, 'Package hidden');
+                      if (context.mounted) {
+                        AdminSnack.success(context, 'Package hidden');
+                      }
                     } catch (error) {
                       if (context.mounted) AdminSnack.error(context, error);
                     }

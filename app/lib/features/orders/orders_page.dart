@@ -8,6 +8,7 @@ import '../../models/order.dart';
 import '../../providers/providers.dart';
 import '../../widgets/catalog_widgets.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 import 'order_status_ui.dart';
 
 class OrdersPage extends ConsumerStatefulWidget {
@@ -25,8 +26,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
     final strings = Strings.of(context);
     final orders = ref.watch(ordersProvider(_filter));
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.myOrders)),
+    return AppPage(
+      showBack: false,
+      title: strings.myOrders,
       body: MaxWidthBody(
         child: Column(
           children: [
@@ -34,7 +36,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
               height: 56,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
                   CategoryPill(
                     label: strings.allOrders,
@@ -66,8 +69,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (_, __) => const ShimmerBox(height: 92),
                 ),
-                error: (error, _) =>
-                    ErrorView(error: error, onRetry: () => ref.invalidate(ordersProvider(_filter))),
+                error: (error, _) => ErrorView(
+                    error: error,
+                    onRetry: () => ref.invalidate(ordersProvider(_filter))),
                 data: (page) {
                   if (page.items.isEmpty) {
                     return EmptyView(
@@ -89,7 +93,8 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                       padding: const EdgeInsets.all(16),
                       itemCount: page.items.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) => _OrderCard(order: page.items[index]),
+                      itemBuilder: (context, index) =>
+                          _OrderCard(order: page.items[index]),
                     ),
                   );
                 },
@@ -155,7 +160,8 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 Format.money(order.total),
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w800),
               ),
             ],
           ),

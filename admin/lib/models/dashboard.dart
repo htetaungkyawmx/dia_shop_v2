@@ -1,5 +1,6 @@
 class DailyPoint {
-  const DailyPoint({required this.date, required this.orders, required this.revenue});
+  const DailyPoint(
+      {required this.date, required this.orders, required this.revenue});
 
   final String date;
   final int orders;

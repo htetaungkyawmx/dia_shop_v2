@@ -82,6 +82,14 @@ public final class AuthDtos {
         }
     }
 
+    public record AccountStatsResponse(
+            long totalSpent,
+            long completedOrders,
+            long openOrders,
+            Instant memberSince
+    ) {
+    }
+
     public record UpdateProfileRequest(
             @Size(min = 2, max = 120) String displayName,
             @Size(max = 30) String phone,

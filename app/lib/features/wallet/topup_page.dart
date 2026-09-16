@@ -10,6 +10,7 @@ import '../../l10n/strings.dart';
 import '../../models/wallet.dart';
 import '../../providers/providers.dart';
 import '../../widgets/common.dart';
+import '../../widgets/layout.dart';
 
 /// Manual transfer flow: pick a method, copy the account, transfer in the
 /// banking app, then send us the reference and a screenshot to verify.
@@ -107,7 +108,8 @@ class _TopupPageState extends ConsumerState<TopupPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.mark_email_read_rounded, size: 40, color: AppTheme.success),
+        icon: const Icon(Icons.mark_email_read_rounded,
+            size: 40, color: AppTheme.success),
         title: Text(strings.topupSubmitted),
         content: Text(strings.topupSubmittedBody, textAlign: TextAlign.center),
         actions: [
@@ -129,8 +131,8 @@ class _TopupPageState extends ConsumerState<TopupPage> {
     final strings = Strings.of(context);
     final methods = ref.watch(paymentMethodsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.topUp)),
+    return AppPage(
+      title: strings.topUp,
       body: MaxWidthBody(
         child: methods.when(
           loading: () => ListView(
@@ -141,8 +143,9 @@ class _TopupPageState extends ConsumerState<TopupPage> {
               ShimmerBox(height: 200),
             ],
           ),
-          error: (error, _) =>
-              ErrorView(error: error, onRetry: () => ref.invalidate(paymentMethodsProvider)),
+          error: (error, _) => ErrorView(
+              error: error,
+              onRetry: () => ref.invalidate(paymentMethodsProvider)),
           data: (list) {
             // Default to the first method so the form is usable immediately.
             _method ??= list.isNotEmpty ? list.first : null;
@@ -181,7 +184,8 @@ class _TopupPageState extends ConsumerState<TopupPage> {
                       for (final value in _quickAmounts)
                         ActionChip(
                           label: Text(Format.number(value)),
-                          onPressed: () => setState(() => _amount.text = '$value'),
+                          onPressed: () =>
+                              setState(() => _amount.text = '$value'),
                         ),
                     ],
                   ),
@@ -202,10 +206,12 @@ class _TopupPageState extends ConsumerState<TopupPage> {
                       final parsed = int.tryParse((value ?? '').trim());
                       if (parsed == null || parsed <= 0) return strings.amount;
                       if (active != null && parsed < active.minAmount) {
-                        return strings.minAmount(Format.money(active.minAmount));
+                        return strings
+                            .minAmount(Format.money(active.minAmount));
                       }
                       if (active != null && parsed > active.maxAmount) {
-                        return strings.maxAmount(Format.money(active.maxAmount));
+                        return strings
+                            .maxAmount(Format.money(active.maxAmount));
                       }
                       return null;
                     },
@@ -217,8 +223,9 @@ class _TopupPageState extends ConsumerState<TopupPage> {
                       labelText: strings.referenceNo,
                       helperText: strings.referenceHint,
                     ),
-                    validator: (value) =>
-                        (value ?? '').trim().isEmpty ? strings.referenceNo : null,
+                    validator: (value) => (value ?? '').trim().isEmpty
+                        ? strings.referenceNo
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
@@ -247,7 +254,9 @@ class _TopupPageState extends ConsumerState<TopupPage> {
                     onPressed: _submitting || _uploading ? null : _submit,
                     icon: _submitting
                         ? const SizedBox(
-                            width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.send_rounded, size: 18),
                     label: Text(strings.submitTopup),
                   ),
@@ -302,7 +311,8 @@ class _AccountCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(strings.transferTo, style: theme.textTheme.bodySmall),
+                      Text(strings.transferTo,
+                          style: theme.textTheme.bodySmall),
                       Text(method.name, style: theme.textTheme.titleSmall),
                     ],
                   ),
@@ -366,7 +376,8 @@ class _CopyRow extends StatelessWidget {
 }
 
 class _SlipPicker extends StatelessWidget {
-  const _SlipPicker({required this.url, required this.uploading, required this.onPick});
+  const _SlipPicker(
+      {required this.url, required this.uploading, required this.onPick});
 
   final String? url;
   final bool uploading;
@@ -404,7 +415,8 @@ class _SlipPicker extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusSmall + 2),
-          border: Border.all(color: theme.dividerColor, style: BorderStyle.solid),
+          border:
+              Border.all(color: theme.dividerColor, style: BorderStyle.solid),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

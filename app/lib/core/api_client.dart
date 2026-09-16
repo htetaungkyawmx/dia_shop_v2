@@ -6,7 +6,7 @@ import 'api_exception.dart';
 import 'env.dart';
 import 'token_store.dart';
 
-/// HTTP client for the Dia Shop API.
+/// HTTP client for the Game Store API.
 ///
 /// Attaches the access token, and on a 401 refreshes once and replays the
 /// request. Concurrent 401s share a single refresh so a screen with several
@@ -97,8 +97,10 @@ class ApiClient {
     }
   }
 
-  Future<T> get<T>(String path, {Map<String, dynamic>? query, bool auth = true}) {
-    return _run(() => _dio.get<T>(path, queryParameters: _clean(query), options: _options(auth)));
+  Future<T> get<T>(String path,
+      {Map<String, dynamic>? query, bool auth = true}) {
+    return _run(() => _dio.get<T>(path,
+        queryParameters: _clean(query), options: _options(auth)));
   }
 
   Future<T> post<T>(String path, {Object? body, bool auth = true}) {
@@ -114,10 +116,12 @@ class ApiClient {
   }
 
   Future<T> delete<T>(String path, {Object? body, bool auth = true}) {
-    return _run(() => _dio.delete<T>(path, data: body, options: _options(auth)));
+    return _run(
+        () => _dio.delete<T>(path, data: body, options: _options(auth)));
   }
 
-  Future<T> upload<T>(String path, {required MultipartFile file, String field = 'file'}) {
+  Future<T> upload<T>(String path,
+      {required MultipartFile file, String field = 'file'}) {
     return _run(() => _dio.post<T>(
           path,
           data: FormData.fromMap({field: file}),

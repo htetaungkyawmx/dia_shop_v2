@@ -16,7 +16,7 @@ public class OpenApiConfig {
         final String scheme = "bearerAuth";
         return new OpenAPI()
                 .info(new Info()
-                        .title("Dia Shop API")
+                        .title("Game Store API")
                         .version("1.0.0")
                         .description("Digital goods and game top-up shop: catalog, wallet, orders, admin."))
                 .addSecurityItem(new SecurityRequirement().addList(scheme))
