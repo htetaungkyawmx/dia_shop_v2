@@ -1,0 +1,13 @@
+# Runtime-only image for a jar built on the developer machine.
+#
+# Used when the API shares a small VPS with other services: compiling with
+# Maven on the server would take ~10 minutes of both CPUs away from whatever
+# else is running there. Build locally with `mvn package`, ship the jar.
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+RUN addgroup -S app && adduser -S app -G app && mkdir -p /data/uploads && chown -R app:app /data
+COPY app.jar app.jar
+USER app
+EXPOSE 8080
+ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:+UseSerialGC"
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]

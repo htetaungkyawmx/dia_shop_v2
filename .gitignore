@@ -37,3 +37,4 @@ deploy/.env
 scripts/deploy.env
 deploy/web/
 deploy/backups/
+scripts/deploy-shared.env

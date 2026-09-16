@@ -39,7 +39,8 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
       STORAGE_PATH: /data/uploads
       STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL:-http://localhost:8080/uploads}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5000,http://localhost:5001,http://localhost:8081}
+      # Any localhost port: `flutter run -d chrome` serves from a random one.
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
     ports:
       - "8080:8080"
     volumes:

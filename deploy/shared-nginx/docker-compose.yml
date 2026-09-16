@@ -1,0 +1,61 @@
+# For a VPS that already runs nginx for other sites.
+#
+# Only the database and the API run in Docker. The host's existing nginx stays
+# in charge of ports 80/443 and TLS, and proxies to the API over loopback —
+# nothing here is reachable from the internet directly.
+name: hk-game-shop
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dia_shop
+      POSTGRES_USER: dia_shop
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+    command: ["postgres", "-c", "shared_buffers=96MB", "-c", "max_connections=40"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dia_shop -d dia_shop"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.runtime
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/dia_shop
+      DB_USER: dia_shop
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL is required}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
+      CORS_ORIGINS: https://${DOMAIN:?DOMAIN is required},https://www.${DOMAIN},https://admin.${DOMAIN}
+      STORAGE_PATH: /data/uploads
+      STORAGE_PUBLIC_URL: https://api.${DOMAIN}/uploads
+    volumes:
+      - uploads:/data/uploads
+    # Loopback only. Docker publishes ports around ufw, so binding to 0.0.0.0
+    # here would expose the API even with the firewall closed.
+    ports:
+      - "127.0.0.1:${API_PORT:-8090}:8080"
+    mem_limit: 640m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+volumes:
+  pgdata:
+  uploads:
