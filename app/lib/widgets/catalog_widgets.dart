@@ -370,12 +370,24 @@ class _GameCardState extends State<GameCard> {
           duration: const Duration(milliseconds: 160),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppTheme.radius),
+            // A warm rim that lights up on hover: the card reads as a piece of
+            // stock rather than a flat tile.
+            border: Border.all(
+              color: _hovered
+                  ? AppTheme.gold.withValues(alpha: 0.55)
+                  : Colors.white.withValues(alpha: 0.07),
+            ),
             boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: _hovered ? 0.5 : 0.28),
+                  blurRadius: _hovered ? 26 : 12,
+                  offset: Offset(0, _hovered ? 12 : 5)),
               if (_hovered)
                 BoxShadow(
-                    color: AppTheme.brand.withValues(alpha: 0.35),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10)),
+                    color: AppTheme.gold.withValues(alpha: 0.22),
+                    blurRadius: 30,
+                    spreadRadius: -4,
+                    offset: const Offset(0, 8)),
             ],
           ),
           child: ClipRRect(
@@ -440,6 +452,11 @@ class _GameCardState extends State<GameCard> {
                         spacing: 6,
                         runSpacing: 6,
                         children: [
+                          if (product.featured)
+                            const _Pill(
+                                icon: Icons.local_fire_department_rounded,
+                                label: 'HOT',
+                                color: AppTheme.gold),
                           if (product.inStock &&
                               product.fulfillmentType == 'CODE_DELIVERY')
                             _Pill(

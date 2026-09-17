@@ -685,16 +685,18 @@ class _GameGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        // Fewer columns than a dense catalogue: the artwork is the selling
+        // point, so each tile gets more room.
         final columns = width >= 1100
-            ? 6
+            ? 5
             : width >= 800
-                ? 5
+                ? 4
                 : width >= 620
-                    ? 4
+                    ? 3
                     : width >= 480
                         ? 3
                         : 2;
-        final spacing = width >= 800 ? 18.0 : 10.0;
+        final spacing = width >= 800 ? 22.0 : 12.0;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),

@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -147,58 +149,66 @@ class WebHeader extends ConsumerWidget {
         ? location == '/'
         : location == route || location.startsWith('$route/');
 
-    return Material(
-      color: theme.colorScheme.surface,
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: theme.dividerColor))),
-        child: PageContainer(
-          child: Row(
-            children: [
-              BrandMark(onTap: () => context.go('/')),
-              const SizedBox(width: 28),
-              for (final (label, route) in links)
-                _NavLink(
-                    label: label,
-                    active: isActive(route),
-                    onTap: () => context.go(route)),
-              const Spacer(),
-              if (showSearchField)
-                SizedBox(
-                  width: 260,
-                  child: _HeaderSearch(hint: strings.searchHint),
-                )
-              else
-                IconButton(
-                  tooltip: strings.search,
-                  onPressed: () => context.push('/search'),
-                  icon: const Icon(Icons.search_rounded),
-                ),
-              const SizedBox(width: 6),
-              const _LanguageToggle(),
-              if (user == null) ...[
-                const SizedBox(width: 8),
-                TextButton(
-                    onPressed: () => pushLogin(context),
-                    child: Text(strings.signIn)),
+    // Frosted bar: the page scrolls under a translucent, blurred header with a
+    // faint gold hairline, rather than butting against a solid block.
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          height: height,
+          decoration: BoxDecoration(
+              color: theme.colorScheme.surface.withValues(alpha: 0.72),
+              border: Border(
+                  bottom: BorderSide(
+                      color: AppTheme.gold.withValues(alpha: 0.18)))),
+          child: PageContainer(
+            child: Row(
+              children: [
+                BrandMark(onTap: () => context.go('/')),
+                const SizedBox(width: 28),
+                for (final (label, route) in links)
+                  _NavLink(
+                      label: label,
+                      active: isActive(route),
+                      onTap: () => context.go(route)),
+                const Spacer(),
+                if (showSearchField)
+                  SizedBox(
+                    width: 260,
+                    child: _HeaderSearch(hint: strings.searchHint),
+                  )
+                else
+                  IconButton(
+                    tooltip: strings.search,
+                    onPressed: () => context.push('/search'),
+                    icon: const Icon(Icons.search_rounded),
+                  ),
                 const SizedBox(width: 6),
-                FilledButton(
-                  style: FilledButton.styleFrom(minimumSize: const Size(0, 42)),
-                  onPressed: () => pushLogin(context, register: true),
-                  child: Text(strings.signUp),
-                ),
-              ] else ...[
-                const SizedBox(width: 6),
-                BalancePill(
-                  balance:
-                      ref.watch(walletProvider).value?.balance ?? user.balance,
-                  onTap: () => context.push('/wallet/topup'),
-                ),
-                const _NotificationBell(),
-                const _AccountMenu(),
+                const _LanguageToggle(),
+                if (user == null) ...[
+                  const SizedBox(width: 8),
+                  TextButton(
+                      onPressed: () => pushLogin(context),
+                      child: Text(strings.signIn)),
+                  const SizedBox(width: 6),
+                  FilledButton(
+                    style:
+                        FilledButton.styleFrom(minimumSize: const Size(0, 42)),
+                    onPressed: () => pushLogin(context, register: true),
+                    child: Text(strings.signUp),
+                  ),
+                ] else ...[
+                  const SizedBox(width: 6),
+                  BalancePill(
+                    balance: ref.watch(walletProvider).value?.balance ??
+                        user.balance,
+                    onTap: () => context.push('/wallet/topup'),
+                  ),
+                  const _NotificationBell(),
+                  const _AccountMenu(),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

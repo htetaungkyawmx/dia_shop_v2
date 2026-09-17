@@ -20,9 +20,9 @@ class AppTheme {
   static const danger = Color(0xFFDC2626);
   static const info = Color(0xFF2563EB);
 
-  static const _darkBackground = Color(0xFF0E1016);
-  static const _darkSurface = Color(0xFF161A24);
-  static const _darkSurfaceHigh = Color(0xFF1E2430);
+  static const _darkBackground = Color(0xFF07080D);
+  static const _darkSurface = Color(0xFF11141D);
+  static const _darkSurfaceHigh = Color(0xFF191E2A);
   static const _lightBackground = Color(0xFFF6F6FB);
 
   static const radius = 18.0;
