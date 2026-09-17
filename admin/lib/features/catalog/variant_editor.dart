@@ -75,9 +75,8 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
     _supplierProductId =
         TextEditingController(text: v?.supplierProductId ?? '');
     _stockType = v?.stockType ?? 'UNLIMITED';
-    _supplier = (v?.supplier == null || v!.supplier!.isEmpty)
-        ? 'NONE'
-        : v.supplier!;
+    _supplier =
+        (v?.supplier == null || v!.supplier!.isEmpty) ? 'NONE' : v.supplier!;
     _active = v?.active ?? true;
   }
 
@@ -125,9 +124,10 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
       'sortOrder': int.tryParse(_sortOrder.text.trim()) ?? 0,
       'active': _active,
       'supplier': _supplier == 'NONE' ? null : _supplier,
-      'supplierProductId': _supplier == 'NONE' || _supplierProductId.text.trim().isEmpty
-          ? null
-          : _supplierProductId.text.trim(),
+      'supplierProductId':
+          _supplier == 'NONE' || _supplierProductId.text.trim().isEmpty
+              ? null
+              : _supplierProductId.text.trim(),
     };
 
     try {
@@ -314,8 +314,7 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _supplier,
-                  decoration:
-                      const InputDecoration(labelText: 'Delivered by'),
+                  decoration: const InputDecoration(labelText: 'Delivered by'),
                   items: const [
                     DropdownMenuItem(
                       value: 'NONE',
@@ -337,18 +336,18 @@ class _VariantEditorState extends ConsumerState<VariantEditor> {
                       labelText: 'Smile.one product id',
                       hintText: 'e.g. 13 (from the Smile.one price list)',
                     ),
-                    validator: (v) => _supplier == 'SMILEONE' &&
-                            (v ?? '').trim().isEmpty
-                        ? 'Enter the Smile.one product id, or set Manual'
-                        : null,
+                    validator: (v) =>
+                        _supplier == 'SMILEONE' && (v ?? '').trim().isEmpty
+                            ? 'Enter the Smile.one product id, or set Manual'
+                            : null,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       'Set the game on the product itself (Smile.one game code). '
                       'Auto delivery must also be switched on in Settings.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ),
                 ],

@@ -38,11 +38,18 @@ class _UsersPageState extends ConsumerState<UsersPage> {
           ),
           const SizedBox(width: 12),
           if (me?.role == 'SUPER_ADMIN')
-            FilledButton.icon(
-              onPressed: () => _createStaff(context),
-              icon: const Icon(Icons.person_add_alt_rounded, size: 18),
-              label: const Text('Add staff'),
-            ),
+            if (MediaQuery.sizeOf(context).width < 760)
+              IconButton.filled(
+                tooltip: 'Add staff',
+                onPressed: () => _createStaff(context),
+                icon: const Icon(Icons.person_add_alt_rounded, size: 20),
+              )
+            else
+              FilledButton.icon(
+                onPressed: () => _createStaff(context),
+                icon: const Icon(Icons.person_add_alt_rounded, size: 18),
+                label: const Text('Add staff'),
+              ),
           const SizedBox(width: 16),
         ],
       ),
@@ -413,21 +420,19 @@ class _UserRow extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Flexible(
-                            child: Text(user.displayName,
-                                style: theme.textTheme.titleSmall)),
-                        if (user.isAdmin) ...[
-                          const SizedBox(width: 8),
+                        Text(user.displayName,
+                            style: theme.textTheme.titleSmall),
+                        if (user.isAdmin)
                           StatusBadge(
                               status: 'REFUNDED',
                               label: prettyStatus(user.role)),
-                        ],
-                        if (user.isSuspended) ...[
-                          const SizedBox(width: 8),
+                        if (user.isSuspended)
                           const StatusBadge(status: 'SUSPENDED'),
-                        ],
                       ],
                     ),
                     Text(

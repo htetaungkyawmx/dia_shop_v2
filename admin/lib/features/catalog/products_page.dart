@@ -45,9 +45,9 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          FilledButton.icon(
-            onPressed: () async {
+          const SizedBox(width: 8),
+          Builder(builder: (context) {
+            Future<void> create() async {
               final list = categories.value ?? const <AdminCategory>[];
               if (list.isEmpty) {
                 AdminSnack.info(context, 'Create a category first.');
@@ -55,64 +55,71 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
               }
               final saved = await ProductEditor.show(context, categories: list);
               if (saved == true) _refresh();
-            },
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('New product'),
-          ),
-          const SizedBox(width: 16),
+            }
+
+            if (MediaQuery.sizeOf(context).width < 760) {
+              return IconButton.filled(
+                tooltip: 'New product',
+                onPressed: create,
+                icon: const Icon(Icons.add_rounded, size: 20),
+              );
+            }
+            return FilledButton.icon(
+              onPressed: create,
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('New product'),
+            );
+          }),
+          const SizedBox(width: 12),
         ],
       ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: categories.when(
-                    loading: () => const SizedBox(height: 34),
-                    error: (_, __) => const SizedBox.shrink(),
-                    data: (list) => Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ChoiceChip(
-                          label: const Text('All categories'),
-                          selected: _filter.categoryId == null,
-                          onSelected: (_) => setState(
-                            () => _filter = ProductFilter(
-                                query: _filter.query, active: _filter.active),
-                          ),
+            // One Wrap for every chip. While "Hidden only" sat outside it in a
+            // Row it reserved its full width first, and on a phone the category
+            // chips were squeezed until their labels were clipped.
+            child: categories.when(
+              loading: () => const SizedBox(height: 34),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (list) => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: const Text('All categories'),
+                    selected: _filter.categoryId == null,
+                    onSelected: (_) => setState(
+                      () => _filter = ProductFilter(
+                          query: _filter.query, active: _filter.active),
+                    ),
+                  ),
+                  for (final category in list)
+                    ChoiceChip(
+                      label: Text(category.name),
+                      selected: _filter.categoryId == category.id,
+                      onSelected: (_) => setState(
+                        () => _filter = ProductFilter(
+                          query: _filter.query,
+                          categoryId: category.id,
+                          active: _filter.active,
                         ),
-                        for (final category in list)
-                          ChoiceChip(
-                            label: Text(category.name),
-                            selected: _filter.categoryId == category.id,
-                            onSelected: (_) => setState(
-                              () => _filter = ProductFilter(
-                                query: _filter.query,
-                                categoryId: category.id,
-                                active: _filter.active,
-                              ),
-                            ),
-                          ),
-                      ],
+                      ),
+                    ),
+                  FilterChip(
+                    label: const Text('Hidden only'),
+                    selected: _filter.active == false,
+                    onSelected: (selected) => setState(
+                      () => _filter = ProductFilter(
+                        query: _filter.query,
+                        categoryId: _filter.categoryId,
+                        active: selected ? false : null,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                FilterChip(
-                  label: const Text('Hidden only'),
-                  selected: _filter.active == false,
-                  onSelected: (selected) => setState(
-                    () => _filter = ProductFilter(
-                      query: _filter.query,
-                      categoryId: _filter.categoryId,
-                      active: selected ? false : null,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -161,71 +168,89 @@ class _ProductCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    // On a phone the row has to give its width to the name, so the thumbnail
+    // shrinks and the subtitle drops the category - which the filter above
+    // already shows.
+    final narrow = MediaQuery.sizeOf(context).width < 760;
+    final thumb = narrow ? 38.0 : 46.0;
 
     return Card(
       child: ExpansionTile(
         shape: const Border(),
         collapsedShape: const Border(),
-        tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        tilePadding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.sizeOf(context).width < 760 ? 10 : 18,
+            vertical: 8),
         childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: product.imageUrl == null
               ? Container(
-                  width: 46,
-                  height: 46,
+                  width: thumb,
+                  height: thumb,
                   color: theme.colorScheme.surfaceContainerHighest,
                   child: Icon(Icons.sports_esports_rounded,
                       color: theme.colorScheme.onSurfaceVariant, size: 20),
                 )
               : CachedNetworkImage(
                   imageUrl: product.imageUrl!,
-                  width: 46,
-                  height: 46,
+                  width: thumb,
+                  height: thumb,
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => Container(
-                    width: 46,
-                    height: 46,
+                    width: thumb,
+                    height: thumb,
                     color: theme.colorScheme.surfaceContainerHighest,
                   ),
                 ),
         ),
-        title: Row(
+        title: Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Flexible(
-                child: Text(product.name, style: theme.textTheme.titleSmall)),
-            const SizedBox(width: 10),
+            Text(product.name, style: theme.textTheme.titleSmall),
             if (!product.active)
               const StatusBadge(status: 'CANCELLED', label: 'Hidden'),
-            if (product.featured) ...[
-              const SizedBox(width: 6),
+            if (product.featured)
               const StatusBadge(status: 'COMPLETED', label: 'Featured'),
-            ],
-            if (product.lowStockCount > 0) ...[
-              const SizedBox(width: 6),
+            if (product.lowStockCount > 0)
               StatusBadge(
                   status: 'PENDING', label: '${product.lowStockCount} low'),
-            ],
           ],
         ),
         subtitle: Text(
-          '${product.categoryName} · ${product.variants.length} package(s) · '
-          '${prettyStatus(product.fulfillmentType)}',
+          narrow
+              ? '${product.variants.length} package(s) · '
+                  '${prettyStatus(product.fulfillmentType)}'
+              : '${product.categoryName} · ${product.variants.length} package(s) · '
+                  '${prettyStatus(product.fulfillmentType)}',
           style: theme.textTheme.bodySmall
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextButton.icon(
-              onPressed: () async {
-                final saved = await ProductEditor.show(context,
-                    product: product, categories: categories);
-                if (saved == true) onChanged();
-              },
-              icon: const Icon(Icons.edit_outlined, size: 17),
-              label: const Text('Edit'),
-            ),
+            if (narrow)
+              IconButton(
+                tooltip: 'Edit product',
+                onPressed: () async {
+                  final saved = await ProductEditor.show(context,
+                      product: product, categories: categories);
+                  if (saved == true) onChanged();
+                },
+                icon: const Icon(Icons.edit_outlined, size: 18),
+              )
+            else
+              TextButton.icon(
+                onPressed: () async {
+                  final saved = await ProductEditor.show(context,
+                      product: product, categories: categories);
+                  if (saved == true) onChanged();
+                },
+                icon: const Icon(Icons.edit_outlined, size: 17),
+                label: const Text('Edit'),
+              ),
             const Icon(Icons.expand_more_rounded),
           ],
         ),
@@ -296,15 +321,14 @@ class _VariantRow extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Flexible(
-                          child: Text(variant.name,
-                              style: theme.textTheme.bodyLarge)),
-                      if (!variant.active) ...[
-                        const SizedBox(width: 8),
+                      Text(variant.name, style: theme.textTheme.bodyLarge),
+                      if (!variant.active)
                         const StatusBadge(status: 'CANCELLED', label: 'Hidden'),
-                      ],
                     ],
                   ),
                   Text(

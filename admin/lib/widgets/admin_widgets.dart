@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -293,8 +295,11 @@ class _SearchFieldState extends State<SearchField> {
 
   @override
   Widget build(BuildContext context) {
+    // Never wider than half the window: on a phone the full 280 left no room
+    // for the page's primary action beside it.
+    final available = MediaQuery.sizeOf(context).width;
     return SizedBox(
-      width: widget.width,
+      width: math.max(150.0, math.min(widget.width, available * 0.52)),
       child: TextField(
         controller: _controller,
         onChanged: _onChanged,

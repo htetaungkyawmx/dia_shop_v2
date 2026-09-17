@@ -828,7 +828,7 @@ class _WhyUs extends StatelessWidget {
         strings.featureInstantBody
       ),
       (
-        Icons.verified_user_rounded,
+        Icons.account_balance_wallet_rounded,
         strings.featureSecureTitle,
         strings.featureSecureBody
       ),
@@ -893,7 +893,8 @@ class _HowToBuy extends StatelessWidget {
             for (var i = 0; i < steps.length; i++)
               _InfoTile(
                 icon: steps[i].$1,
-                title: '${i + 1}. ${steps[i].$2}',
+                badge: '${i + 1}',
+                title: steps[i].$2,
                 body: steps[i].$3,
                 color: AppTheme.brand,
               ),
@@ -954,8 +955,11 @@ class _InfoTile extends StatelessWidget {
       {required this.icon,
       required this.title,
       required this.body,
-      required this.color});
+      required this.color,
+      this.badge});
 
+  /// Drawn in place of the icon when set - used for the numbered steps.
+  final String? badge;
   final IconData icon;
   final String title;
   final String body;
@@ -982,7 +986,12 @@ class _InfoTile extends StatelessWidget {
             decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: color, size: 22),
+            alignment: Alignment.center,
+            child: badge != null
+                ? Text(badge!,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(color: color, fontWeight: FontWeight.w800))
+                : Icon(icon, color: color, size: 22),
           ),
           const SizedBox(height: 12),
           Text(title,
