@@ -479,10 +479,28 @@ class _BannerCarouselState extends State<_BannerCarousel> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      AppImage(
-                          url: banner.imageUrl,
-                          radius: 0,
-                          fallbackIcon: Icons.campaign_rounded),
+                      // A slide may carry a wide banner or a square product
+                      // logo, so the image is contained over a deep gradient
+                      // rather than cropped to fill.
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF1B1F31), Color(0xFF090B13)],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                            large ? 24 : 12, large ? 20 : 10,
+                            large ? 24 : 12, large ? 56 : 34),
+                        child: AppImage(
+                            url: banner.imageUrl,
+                            radius: 0,
+                            fit: BoxFit.contain,
+                            fallbackIcon: Icons.campaign_rounded),
+                      ),
                       if ((banner.title ?? '').isNotEmpty)
                         DecoratedBox(
                           decoration: const BoxDecoration(
