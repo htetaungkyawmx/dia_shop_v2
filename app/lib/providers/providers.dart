@@ -63,10 +63,13 @@ class SettingsNotifier extends Notifier<AppSettings> {
   AppSettings build() {
     final prefs = ref.watch(sharedPreferencesProvider);
     return AppSettings(
+      // Dark by default rather than following the device: the shop is
+      // designed dark - game artwork sits on a deep navy - and a customer on a
+      // light-mode phone would otherwise land on the pale theme.
       themeMode: switch (prefs.getString(_themeKey)) {
         'light' => ThemeMode.light,
-        'dark' => ThemeMode.dark,
-        _ => ThemeMode.system,
+        'system' => ThemeMode.system,
+        _ => ThemeMode.dark,
       },
       // Burmese is the default: it is what most customers read.
       locale: Locale(prefs.getString(_localeKey) ?? 'my'),
