@@ -338,10 +338,14 @@ class BalancePill extends StatelessWidget {
 /// Portrait game card, styled after store key art: the name and starting price
 /// sit over a darkened bottom edge of the image, so the card height is fixed
 /// by its aspect ratio and can never overflow however long the name is.
+/// Store-front game tile: square artwork on top, the name on a panel beneath
+/// it. Keeping the name out of the artwork means a wide logo and tall key art
+/// both sit in the same grid without one being cropped or overprinted.
 class GameCard extends StatefulWidget {
   const GameCard({super.key, required this.product, required this.onTap});
 
-  static const double aspectRatio = 0.72;
+  /// Square art plus the name panel underneath.
+  static const double aspectRatio = 0.74;
 
   final ProductSummary product;
   final VoidCallback onTap;
@@ -358,24 +362,24 @@ class _GameCardState extends State<GameCard> {
     final theme = Theme.of(context);
     final strings = Strings.of(context);
     final product = widget.product;
+    final name = product.localisedName(strings.isBurmese);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedScale(
-        scale: _hovered ? 1.03 : 1,
+        scale: _hovered ? 1.04 : 1,
         duration: const Duration(milliseconds: 160),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           decoration: BoxDecoration(
+            color: const Color(0xFF121933),
             borderRadius: BorderRadius.circular(AppTheme.radius),
-            // A warm rim that lights up on hover: the card reads as a piece of
-            // stock rather than a flat tile.
             border: Border.all(
               color: _hovered
-                  ? AppTheme.gold.withValues(alpha: 0.55)
-                  : Colors.white.withValues(alpha: 0.07),
+                  ? theme.colorScheme.primary.withValues(alpha: 0.65)
+                  : Colors.white.withValues(alpha: 0.06),
             ),
             boxShadow: [
               BoxShadow(
@@ -384,28 +388,22 @@ class _GameCardState extends State<GameCard> {
                   offset: Offset(0, _hovered ? 12 : 5)),
               if (_hovered)
                 BoxShadow(
-                    color: AppTheme.gold.withValues(alpha: 0.22),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.28),
                     blurRadius: 30,
-                    spreadRadius: -4,
+                    spreadRadius: -6,
                     offset: const Offset(0, 8)),
             ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppTheme.radius),
             child: Material(
-              color: theme.colorScheme.surfaceContainerHighest,
+              color: Colors.transparent,
               child: InkWell(
                 onTap: widget.onTap,
-                child: Stack(
-                  fit: StackFit.expand,
+                child: Column(
                   children: [
-                    if (product.imageUrl != null)
-                      // Artwork is a mix of tall key art and wide transparent
-                      // logos. Cover-fitting a wide logo cuts its ends off, and
-                      // blurring a transparent one smears it into a muddy
-                      // wash - so every tile gets the same deep gradient and
-                      // the whole image is contained on top of it.
-                      Stack(
+                    Expanded(
+                      child: Stack(
                         fit: StackFit.expand,
                         children: [
                           const DecoratedBox(
@@ -413,94 +411,84 @@ class _GameCardState extends State<GameCard> {
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [Color(0xFF1B1F31), Color(0xFF0B0D16)],
+                                colors: [Color(0xFF1B2447), Color(0xFF0C1126)],
                               ),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 12, 12, 34),
-                            child: AppImage(
-                                url: product.imageUrl,
-                                radius: 0,
-                                fit: BoxFit.contain,
-                                fallbackIcon: Icons.sports_esports_rounded),
+                          if (product.imageUrl != null)
+                            Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: AppImage(
+                                  url: product.imageUrl,
+                                  radius: 0,
+                                  fit: BoxFit.contain,
+                                  fallbackIcon: Icons.sports_esports_rounded),
+                            )
+                          else
+                            _ArtPlaceholder(name: name),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Wrap(
+                              spacing: 6,
+                              children: [
+                                if (product.featured)
+                                  const _Pill(
+                                      icon: Icons.local_fire_department_rounded,
+                                      label: 'HOT',
+                                      color: AppTheme.gold),
+                                if (product.inStock &&
+                                    product.fulfillmentType == 'CODE_DELIVERY')
+                                  _Pill(
+                                      icon: Icons.bolt_rounded,
+                                      label: strings.instantDelivery,
+                                      color: AppTheme.accent),
+                              ],
+                            ),
                           ),
                         ],
-                      )
-                    else
-                      _ArtPlaceholder(
-                          name: product.localisedName(strings.isBurmese)),
-                    const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.transparent,
-                            Color(0xE6000000)
+                      ),
+                    ),
+                    // Fixed-height caption: the name can wrap to two lines and
+                    // the tile still cannot overflow its grid cell.
+                    SizedBox(
+                      height: 58,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              name.toUpperCase(),
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                                height: 1.2,
+                              ),
+                            ),
+                            if (product.startingPrice != null ||
+                                !product.inStock) ...[
+                              const SizedBox(height: 3),
+                              Text(
+                                !product.inStock
+                                    ? strings.outOfStock
+                                    : Format.money(product.startingPrice!),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: product.inStock
+                                      ? AppTheme.gold
+                                      : const Color(0xFFFF8A80),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ],
-                          stops: [0, 0.45, 1],
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      right: 8,
-                      child: Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          if (product.featured)
-                            const _Pill(
-                                icon: Icons.local_fire_department_rounded,
-                                label: 'HOT',
-                                color: AppTheme.gold),
-                          if (product.inStock &&
-                              product.fulfillmentType == 'CODE_DELIVERY')
-                            _Pill(
-                                icon: Icons.bolt_rounded,
-                                label: strings.instantDelivery,
-                                color: AppTheme.accent),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      left: 12,
-                      right: 12,
-                      bottom: 12,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            product.localisedName(strings.isBurmese),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              height: 1.25,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            !product.inStock
-                                ? strings.outOfStock
-                                : product.startingPrice == null
-                                    ? ''
-                                    : '${strings.priceFrom} ${Format.money(product.startingPrice!)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: product.inStock
-                                  ? AppTheme.gold
-                                  : const Color(0xFFFF8A80),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],
