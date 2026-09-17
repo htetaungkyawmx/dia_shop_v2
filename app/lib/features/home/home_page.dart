@@ -257,25 +257,11 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wide = Breakpoints.isWide(context);
-    final carousel = banners.isEmpty
+    // One banner across the full width. The wallet panel that used to sit
+    // beside it competed with the artwork; the balance is in the header.
+    return banners.isEmpty
         ? const _WelcomeBanner()
         : _BannerCarousel(banners: banners, height: wide ? 340 : 170);
-
-    if (!wide) return carousel;
-
-    // On a wide screen the hero shares its row with the visitor's wallet (or a
-    // sign-up prompt), so the first thing they see is both an offer and an action.
-    return SizedBox(
-      height: 340,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(flex: 7, child: carousel),
-          const SizedBox(width: 20),
-          const Expanded(flex: 3, child: _HeroSidePanel()),
-        ],
-      ),
-    );
   }
 }
 
@@ -311,102 +297,6 @@ class _WelcomeBanner extends StatelessWidget {
             ),
           ),
           const AppLogo(size: 110),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeroSidePanel extends ConsumerWidget {
-  const _HeroSidePanel();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final strings = Strings.of(context);
-    final user = ref.watch(authProvider).value;
-    final wallet = ref.watch(walletProvider).value;
-    const onDark = Colors.white;
-
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2A2170), Color(0xFF12111F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppTheme.radius),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const AppLogo(size: 46),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  user == null ? strings.appName : user.displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(color: onDark),
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          if (user == null) ...[
-            Text(
-              strings.tagline,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: Colors.white70, height: 1.5),
-            ),
-            const SizedBox(height: 18),
-            FilledButton(
-                onPressed: () => pushLogin(context, register: true),
-                child: Text(strings.signUp)),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: onDark,
-                side: const BorderSide(color: Colors.white24),
-              ),
-              onPressed: () => pushLogin(context),
-              child: Text(strings.signIn),
-            ),
-          ] else ...[
-            Text(strings.availableBalance,
-                style:
-                    theme.textTheme.bodySmall?.copyWith(color: Colors.white60)),
-            const SizedBox(height: 4),
-            Text(
-              Format.money(wallet?.balance ?? user.balance),
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(color: onDark, fontWeight: FontWeight.w800),
-            ),
-            if ((wallet?.pendingTopupAmount ?? 0) > 0)
-              Text(
-                '${strings.pendingTopup}: ${Format.money(wallet!.pendingTopupAmount)}',
-                style:
-                    theme.textTheme.bodySmall?.copyWith(color: AppTheme.gold),
-              ),
-            const SizedBox(height: 18),
-            FilledButton.icon(
-              onPressed: () => context.push('/wallet/topup'),
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text(strings.topUp),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: onDark,
-                side: const BorderSide(color: Colors.white24),
-              ),
-              onPressed: () => context.go('/orders'),
-              child: Text(strings.myOrders),
-            ),
-          ],
         ],
       ),
     );

@@ -168,6 +168,25 @@ class CatalogRepository {
         .toList();
   }
 
+  /// Looks up a player name for an account id, so a buyer can confirm they are
+  /// topping up the right account before paying.
+  Future<({bool found, String? playerName, String? message})> checkId({
+    required String game,
+    required String userId,
+    String? zoneId,
+  }) async {
+    final json = await _api.post<Map<String, dynamic>>(
+      '/public/check-id',
+      body: {'game': game, 'userId': userId, 'zoneId': zoneId},
+      auth: false,
+    );
+    return (
+      found: json['found'] as bool? ?? false,
+      playerName: json['playerName'] as String?,
+      message: json['message'] as String?,
+    );
+  }
+
   Future<List<PaymentMethod>> paymentMethods() async {
     final json =
         await _api.get<List<dynamic>>('/public/payment-methods', auth: false);

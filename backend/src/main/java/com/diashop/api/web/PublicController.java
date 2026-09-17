@@ -18,6 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.diashop.api.integration.smileone.SmileOneClient;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import java.util.List;
 
 /** Everything a signed-out visitor may read. */
@@ -30,6 +36,35 @@ public class PublicController {
     private final CatalogService catalogService;
     private final SettingsService settingsService;
     private final TopupService topupService;
+    private final SmileOneClient smileOne;
+
+    /**
+     * Looks a player up by id so a buyer can confirm they are topping up the
+     * right account. Answers plainly when no provider is configured rather
+     * than pretending the id could not be found.
+     */
+    @Operation(summary = "Check a game account id and return the player name")
+    @PostMapping("/check-id")
+    public CheckIdResponse checkId(@Valid @RequestBody CheckIdRequest request) {
+        if (!smileOne.isEnabled()) {
+            return new CheckIdResponse(false, null,
+                    "The account checker is not switched on yet.");
+        }
+        SmileOneClient.Result result = smileOne.validatePlayer(
+                request.game(), request.userId(), request.zoneId());
+        if (result.success() && result.playerName() != null) {
+            return new CheckIdResponse(true, result.playerName(), null);
+        }
+        return new CheckIdResponse(false, null,
+                result.success() ? "No account matched that id." : result.message());
+    }
+
+    public record CheckIdRequest(@NotBlank String game, @NotBlank String userId,
+                                 String zoneId) {
+    }
+
+    public record CheckIdResponse(boolean found, String playerName, String message) {
+    }
 
     @Operation(summary = "Home screen payload: banners, categories and featured products")
     @GetMapping("/home")

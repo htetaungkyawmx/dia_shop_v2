@@ -435,11 +435,12 @@ class _GameCardState extends State<GameCard> {
                                 // No "HOT" pill: every product on the home
                                 // grid is featured, so the badge marked all of
                                 // them and told the buyer nothing.
-                                if (product.inStock &&
-                                    product.fulfillmentType == 'CODE_DELIVERY')
-                                  _Pill(
+                                if (product.inStock)
+                                  // Short label: the tile is narrow and the
+                                  // full phrase wrapped over the artwork.
+                                  const _Pill(
                                       icon: Icons.bolt_rounded,
-                                      label: strings.instantDelivery,
+                                      label: 'Instant',
                                       color: AppTheme.accent),
                               ],
                             ),

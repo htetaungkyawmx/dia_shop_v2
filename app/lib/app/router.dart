@@ -19,6 +19,8 @@ import '../features/profile/profile_page.dart';
 import '../features/shell/app_shell.dart';
 import '../features/shell/splash_page.dart';
 import '../features/support/faq_page.dart';
+import '../features/tools/blogs_page.dart';
+import '../features/tools/id_check_page.dart';
 import '../features/support/support_page.dart';
 import '../features/wallet/topup_page.dart';
 import '../features/wallet/wallet_page.dart';
@@ -29,6 +31,8 @@ final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 /// Routes a signed-out visitor may open. Everything else redirects to sign-in.
 const _publicPrefixes = <String>[
   '/faq',
+  '/blogs',
+  '/id-check',
   '/login',
   '/register',
   '/shop',
@@ -131,6 +135,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: '/support', builder: (context, state) => const SupportPage()),
       GoRoute(path: '/faq', builder: (context, state) => const FaqPage()),
+      GoRoute(path: '/blogs', builder: (context, state) => const BlogsPage()),
+      GoRoute(
+          path: '/id-check', builder: (context, state) => const IdCheckPage()),
       GoRoute(
           path: '/profile/edit',
           builder: (context, state) => const EditProfilePage()),

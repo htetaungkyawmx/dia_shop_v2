@@ -138,11 +138,13 @@ class WebHeader extends ConsumerWidget {
     final location = GoRouterState.of(context).uri.path;
     final showSearchField = Breakpoints.isDesktop(context);
 
-    final links = <(String, String)>[
-      (strings.home, '/'),
-      (strings.shop, '/shop'),
-      if (user != null) (strings.orders, '/orders'),
-      if (user != null) (strings.wallet, '/wallet'),
+    final links = <(String, String, IconData)>[
+      (strings.shop, '/shop', Icons.storefront_rounded),
+      ('ID Checker', '/id-check', Icons.badge_outlined),
+      ('Blogs', '/blogs', Icons.menu_book_rounded),
+      if (user != null) (strings.orders, '/orders', Icons.receipt_long_rounded),
+      if (user != null)
+        (strings.wallet, '/wallet', Icons.account_balance_wallet_rounded),
     ];
 
     bool isActive(String route) => route == '/'
@@ -164,17 +166,20 @@ class WebHeader extends ConsumerWidget {
           child: PageContainer(
             child: Row(
               children: [
-                BrandMark(onTap: () => context.go('/')),
-                const SizedBox(width: 28),
-                for (final (label, route) in links)
+                // A compact home button carries the mark, so the links and the
+                // search box sit together at the start of the bar.
+                _HomeButton(onTap: () => context.go('/')),
+                const SizedBox(width: 14),
+                for (final (label, route, icon) in links)
                   _NavLink(
                       label: label,
+                      icon: icon,
                       active: isActive(route),
                       onTap: () => context.go(route)),
-                const Spacer(),
+                const SizedBox(width: 14),
                 if (showSearchField)
                   SizedBox(
-                    width: 260,
+                    width: 250,
                     child: _HeaderSearch(hint: strings.searchHint),
                   )
                 else
@@ -183,7 +188,7 @@ class WebHeader extends ConsumerWidget {
                     onPressed: () => context.push('/search'),
                     icon: const Icon(Icons.search_rounded),
                   ),
-                const SizedBox(width: 6),
+                const Spacer(),
                 const _LanguageToggle(),
                 if (user == null) ...[
                   const SizedBox(width: 8),
@@ -216,11 +221,43 @@ class WebHeader extends ConsumerWidget {
   }
 }
 
+/// The mark, reduced to a single rounded button at the start of the bar.
+class _HomeButton extends StatelessWidget {
+  const _HomeButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: Strings.of(context).home,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(Icons.home_rounded, color: Colors.white, size: 24),
+        ),
+      ),
+    );
+  }
+}
+
 class _NavLink extends StatelessWidget {
   const _NavLink(
-      {required this.label, required this.active, required this.onTap});
+      {required this.label,
+      required this.active,
+      required this.onTap,
+      this.icon});
 
   final String label;
+  final IconData? icon;
   final bool active;
   final VoidCallback onTap;
 
@@ -234,20 +271,22 @@ class _NavLink extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: Container(
         height: WebHeader.height,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-                color: active ? theme.colorScheme.primary : Colors.transparent,
-                width: 2.5),
-          ),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         alignment: Alignment.center,
-        child: Text(
-          label,
-          style: theme.textTheme.titleSmall?.copyWith(
-              color: color,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 17, color: color),
+              const SizedBox(width: 7),
+            ],
+            Text(
+              label,
+              style: theme.textTheme.titleSmall?.copyWith(
+                  color: color,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.w500),
+            ),
+          ],
         ),
       ),
     );
