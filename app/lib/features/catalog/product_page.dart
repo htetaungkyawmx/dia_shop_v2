@@ -448,7 +448,6 @@ class _ProductBodyState extends ConsumerState<_ProductBody> {
                 ),
               ),
             ),
-            const SiteFooter(),
           ],
         ),
       ),

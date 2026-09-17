@@ -240,49 +240,64 @@ def make_banner(name, cat, slug, out):
 
 
 def make_hero(name, artwork_path, out, accent=(77, 141, 255)):
-    """Compose a wide slide from a product's own artwork.
+    """A balanced slide: artwork on a card at the left, name on the right.
 
-    The artwork is usually square, so a slide that simply contained it was
-    mostly empty. Here a blurred, darkened copy fills the canvas and the
-    artwork sits on top at its own aspect ratio, with the name beside it.
+    Composing straight onto a blurred copy of the artwork gave a nearly black
+    canvas for dark logos, so the slide read as empty. The backdrop is a brand
+    gradient with a soft tint sampled from the artwork instead, and the artwork
+    sits on its own rounded card at a fixed size so every slide is laid out the
+    same way whatever shape the source image is.
     """
     W, H = 1280, 512
     art = Image.open(artwork_path).convert("RGB")
 
-    # Backdrop: the artwork blown up to cover, blurred and darkened.
-    scale = max(W / art.width, H / art.height)
-    back = art.resize((int(art.width * scale), int(art.height * scale)), Image.LANCZOS)
-    left = (back.width - W) // 2
-    top = (back.height - H) // 2
-    back = back.crop((left, top, left + W, top + H))
-    back = back.filter(ImageFilter.GaussianBlur(28))
-    back = Image.blend(back, Image.new("RGB", (W, H), (7, 11, 26)), 0.55)
+    # Tint the gradient towards the artwork's own colour.
+    small = art.resize((1, 1), Image.LANCZOS).getpixel((0, 0))
+    tint = tuple(int(c * 0.45 + a * 0.55) for c, a in zip(small, (24, 33, 71)))
 
-    # Artwork at its own ratio, on the left.
-    box = int(H * 0.72)
-    fit = min(box / art.width, box / art.height)
-    art = art.resize((int(art.width * fit), int(art.height * fit)), Image.LANCZOS)
-    ax = int(W * 0.16) - art.width // 2
-    ay = (H - art.height) // 2
-    back.paste(art, (max(ax, 24), ay))
+    base = Image.new("RGB", (W, H))
+    d = ImageDraw.Draw(base)
+    for x in range(W):
+        d.line([(x, 0), (x, H)], fill=lerp(tint, (9, 13, 30), x / W))
 
-    d = ImageDraw.Draw(back)
+    # Soft glow behind the card.
+    g = Image.new("L", (W, H), 0)
+    gd = ImageDraw.Draw(g)
+    cx, cy, r = int(W * 0.24), H // 2, int(H * 0.46)
+    gd.ellipse([cx - r, cy - r, cx + r, cy + r], fill=120)
+    g = g.filter(ImageFilter.GaussianBlur(70))
+    base = Image.composite(Image.new("RGB", (W, H), accent), base, g)
+
+    # Artwork on a rounded card, contained so nothing is cropped.
+    card = int(H * 0.62)
+    panel = Image.new("RGB", (card, card), (12, 17, 38))
+    fit = min(card * 0.86 / art.width, card * 0.86 / art.height)
+    art = art.resize((max(1, int(art.width * fit)), max(1, int(art.height * fit))),
+                     Image.LANCZOS)
+    panel.paste(art, ((card - art.width) // 2, (card - art.height) // 2))
+    mask = Image.new("L", (card, card), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, card - 1, card - 1],
+                                           radius=int(card * 0.14), fill=255)
+    base.paste(panel, (int(W * 0.09), (H - card) // 2), mask)
+
+    # Name to the right of the card.
+    d = ImageDraw.Draw(base)
+    tx = int(W * 0.09) + card + 56
     words = name.split()
     lines, cur = [], ""
-    nf = font(58)
-    tx = int(W * 0.34)
+    nf = font(56)
     for w in words:
         t = (cur + " " + w).strip()
-        if d.textbbox((0, 0), t, font=nf)[2] > W - tx - 60 and cur:
+        if d.textbbox((0, 0), t, font=nf)[2] > W - tx - 56 and cur:
             lines.append(cur); cur = w
         else:
             cur = t
     if cur:
         lines.append(cur)
     lines = lines[:3]
-    y = (H - len(lines) * 70) // 2
+    y = (H - len(lines) * 68) // 2
     for ln in lines:
         d.text((tx + 2, y + 2), ln, font=nf, fill=(0, 0, 0))
         d.text((tx, y), ln, font=nf, fill=(255, 255, 255))
-        y += 70
-    back.save(out, "PNG")
+        y += 68
+    base.save(out, "PNG")

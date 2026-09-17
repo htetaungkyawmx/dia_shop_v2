@@ -422,7 +422,10 @@ class _BannerCarouselState extends State<_BannerCarousel> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: _ArrowButton(
-                  icon: Icons.chevron_left_rounded,
+                  // Mirrored rather than a second glyph: the left chevron was
+                  // missing from a cached icon font and drew as an empty disc.
+                  flip: true,
+                  icon: Icons.chevron_right_rounded,
                   onTap: () => _go(_index - 1 + widget.banners.length),
                 ),
               ),
@@ -461,9 +464,11 @@ class _BannerCarouselState extends State<_BannerCarousel> {
 }
 
 class _ArrowButton extends StatelessWidget {
-  const _ArrowButton({required this.icon, required this.onTap});
+  const _ArrowButton(
+      {required this.icon, required this.onTap, this.flip = false});
 
   final IconData icon;
+  final bool flip;
   final VoidCallback onTap;
 
   @override
@@ -475,8 +480,11 @@ class _ArrowButton extends StatelessWidget {
         shape: CircleBorder(
             side: BorderSide(color: Colors.white.withValues(alpha: 0.28))),
         clipBehavior: Clip.antiAlias,
-        child:
-            IconButton(onPressed: onTap, icon: Icon(icon, color: Colors.white)),
+        child: IconButton(
+          onPressed: onTap,
+          icon: Transform.flip(
+              flipX: flip, child: Icon(icon, color: Colors.white)),
+        ),
       ),
     );
   }
