@@ -94,7 +94,7 @@ class AppConfig {
   final Map<String, String> support;
 
   static const fallback = AppConfig(
-    appName: 'Game Store',
+    appName: 'SSHGameShop',
     maintenance: false,
     maintenanceMessage: '',
     topupMinAmount: 1000,
@@ -103,7 +103,7 @@ class AppConfig {
   );
 
   factory AppConfig.fromJson(Map<String, dynamic> json) => AppConfig(
-        appName: json['appName'] as String? ?? 'Game Store',
+        appName: json['appName'] as String? ?? 'SSHGameShop',
         maintenance: json['maintenance'] as bool? ?? false,
         maintenanceMessage: json['maintenanceMessage'] as String? ?? '',
         topupMinAmount: (json['topupMinAmount'] as num?)?.toInt() ?? 1000,

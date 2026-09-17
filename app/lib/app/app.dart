@@ -16,7 +16,7 @@ class DiaShopApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
-      title: 'Game Store',
+      title: 'SSHGameShop',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       // Dark only. The storefront is designed around artwork on deep navy;

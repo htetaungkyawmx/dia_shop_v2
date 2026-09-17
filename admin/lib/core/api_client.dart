@@ -6,7 +6,7 @@ import 'api_exception.dart';
 import 'env.dart';
 import 'token_store.dart';
 
-/// HTTP client for the Game Store API.
+/// HTTP client for the SSHGameShop API.
 ///
 /// Attaches the access token, and on a 401 refreshes once and replays the
 /// request. Concurrent 401s share a single refresh so a screen with several

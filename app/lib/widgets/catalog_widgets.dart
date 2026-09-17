@@ -450,7 +450,7 @@ class _GameCardState extends State<GameCard> {
                     // Fixed-height caption: the name can wrap to two lines and
                     // the tile still cannot overflow its grid cell.
                     SizedBox(
-                      height: 58,
+                      height: 52,
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
                         child: Column(
@@ -468,19 +468,17 @@ class _GameCardState extends State<GameCard> {
                                 height: 1.2,
                               ),
                             ),
-                            if (product.startingPrice != null ||
-                                !product.inStock) ...[
+                            // Only a sold-out note here: a top-up product has
+                            // a range of package prices, so a single "from"
+                            // figure on the tile said little and crowded it.
+                            if (!product.inStock) ...[
                               const SizedBox(height: 3),
                               Text(
-                                !product.inStock
-                                    ? strings.outOfStock
-                                    : Format.money(product.startingPrice!),
+                                strings.outOfStock,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.labelSmall?.copyWith(
-                                  color: product.inStock
-                                      ? AppTheme.gold
-                                      : const Color(0xFFFF8A80),
+                                  color: const Color(0xFFFF8A80),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),

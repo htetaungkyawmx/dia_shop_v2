@@ -87,7 +87,7 @@ class AppLogo extends StatelessWidget {
       width: size,
       height: size,
       filterQuality: FilterQuality.medium,
-      semanticLabel: 'Game Store',
+      semanticLabel: 'SSHGameShop',
     );
   }
 }
@@ -547,39 +547,9 @@ class SiteFooter extends ConsumerWidget {
         link(support['phone']!, () => _open('tel:${support['phone']}')),
     ];
 
+    // The mark, name and tagline are shown once, centred above these columns,
+    // so this list is links only.
     final columns = <Widget>[
-      SizedBox(
-        width: 300,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const BrandMark(logoSize: 44),
-            const SizedBox(height: 12),
-            Text(strings.tagline, style: muted),
-            if (methods.isNotEmpty) ...[
-              const SizedBox(height: 18),
-              Text(strings.footerPayments, style: theme.textTheme.labelLarge),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final m in methods)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: theme.dividerColor),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(m.name, style: theme.textTheme.labelMedium),
-                    ),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
       column(strings.footerShop, [
         for (final c in categories)
           link(c.localisedName(strings.isBurmese),
@@ -602,17 +572,55 @@ class SiteFooter extends ConsumerWidget {
       ),
       child: PageContainer(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40),
+          padding: const EdgeInsets.symmetric(vertical: 44),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(spacing: 64, runSpacing: 32, children: columns),
-              const SizedBox(height: 32),
+              // A single centred block: the shop's mark, what it sells and how
+              // to reach it, rather than four columns of links.
+              const AppLogo(size: 54),
+              const SizedBox(height: 14),
+              Text(strings.appName,
+                  style: theme.textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              Text(strings.tagline, style: muted, textAlign: TextAlign.center),
+              const SizedBox(height: 22),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 40,
+                runSpacing: 24,
+                children: columns,
+              ),
+              if (methods.isNotEmpty) ...[
+                const SizedBox(height: 26),
+                Text(strings.footerPayments,
+                    style: theme.textTheme.labelLarge),
+                const SizedBox(height: 10),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final m in methods)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: theme.dividerColor),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(m.name, style: theme.textTheme.labelMedium),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 30),
               const Divider(),
               const SizedBox(height: 16),
               Text(
                   '© ${DateTime.now().year} ${strings.appName}. ${strings.allRightsReserved}',
-                  style: muted),
+                  style: muted,
+                  textAlign: TextAlign.center),
             ],
           ),
         ),

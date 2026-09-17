@@ -93,30 +93,20 @@ class _HomeContent extends ConsumerWidget {
         const _RecentOrders(),
         if (games.isNotEmpty) ...[
           SizedBox(height: gap),
-          PageContainer(
-            child: WebSectionTitle(
-              title: strings.popularGames,
-              action: TextButton(
-                onPressed: () => context.go('/shop?category=mobile-games'),
-                child: Text(strings.viewAll),
-              ),
-            ),
-          ),
+          PageContainer(child: WebSectionTitle(title: strings.popularGames)),
           const SizedBox(height: 16),
           PageContainer(child: _GameGrid(products: games)),
+          const SizedBox(height: 22),
+          _ViewMore(onTap: () => context.go('/shop?category=mobile-games')),
         ],
         if (others.isNotEmpty) ...[
           SizedBox(height: gap),
           PageContainer(
-            child: WebSectionTitle(
-              title: strings.giftCardsAndApps,
-              action: TextButton(
-                  onPressed: () => context.go('/shop'),
-                  child: Text(strings.viewAll)),
-            ),
-          ),
+              child: WebSectionTitle(title: strings.giftCardsAndApps)),
           const SizedBox(height: 16),
           PageContainer(child: _GameGrid(products: others)),
+          const SizedBox(height: 22),
+          _ViewMore(onTap: () => context.go('/shop')),
         ],
         if (data.featured.isEmpty)
           Padding(
@@ -128,11 +118,34 @@ class _HomeContent extends ConsumerWidget {
             ),
           ),
         SizedBox(height: gap),
-        const PageContainer(child: _WhyUs()),
-        SizedBox(height: gap),
-        const PageContainer(child: _HowToBuy()),
         if (wide) const SiteFooter() else const SizedBox(height: 32),
       ],
+    );
+  }
+}
+
+/// Centred pill that closes a section, rather than a link in its corner.
+class _ViewMore extends StatelessWidget {
+  const _ViewMore({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: 210,
+        child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
+          shape: const StadiumBorder(),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+          foregroundColor: Colors.white,
+        ),
+          child: Text(Strings.of(context).viewAll),
+        ),
+      ),
     );
   }
 }
@@ -706,15 +719,15 @@ class _GameGrid extends StatelessWidget {
         // Fewer columns than a dense catalogue: the artwork is the selling
         // point, so each tile gets more room.
         final columns = width >= 1100
-            ? 5
-            : width >= 800
-                ? 4
+            ? 6
+            : width >= 860
+                ? 5
                 : width >= 620
-                    ? 3
+                    ? 4
                     : width >= 480
                         ? 3
                         : 2;
-        final spacing = width >= 800 ? 22.0 : 12.0;
+        final spacing = width >= 800 ? 18.0 : 12.0;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -814,200 +827,6 @@ class _RecentOrders extends ConsumerWidget {
 }
 
 // --------------------------------------------------------------- trust + steps
-
-class _WhyUs extends StatelessWidget {
-  const _WhyUs();
-
-  @override
-  Widget build(BuildContext context) {
-    final strings = Strings.of(context);
-    final items = [
-      (
-        Icons.bolt_rounded,
-        strings.featureInstantTitle,
-        strings.featureInstantBody
-      ),
-      (
-        Icons.account_balance_wallet_rounded,
-        strings.featureSecureTitle,
-        strings.featureSecureBody
-      ),
-      (
-        Icons.support_agent_rounded,
-        strings.featureSupportTitle,
-        strings.featureSupportBody
-      ),
-      (
-        Icons.local_offer_rounded,
-        strings.featurePriceTitle,
-        strings.featurePriceBody
-      ),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        WebSectionTitle(title: strings.whyChooseUs),
-        const SizedBox(height: 16),
-        _ResponsiveTiles(
-          children: [
-            for (var i = 0; i < items.length; i++)
-              _InfoTile(
-                  icon: items[i].$1,
-                  title: items[i].$2,
-                  body: items[i].$3,
-                  color: accentFor(i)),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _HowToBuy extends StatelessWidget {
-  const _HowToBuy();
-
-  @override
-  Widget build(BuildContext context) {
-    final strings = Strings.of(context);
-    final steps = [
-      (
-        Icons.account_balance_wallet_rounded,
-        strings.stepTopUpTitle,
-        strings.stepTopUpBody
-      ),
-      (
-        Icons.touch_app_rounded,
-        strings.stepChooseTitle,
-        strings.stepChooseBody
-      ),
-      (Icons.badge_rounded, strings.stepIdTitle, strings.stepIdBody),
-      (Icons.celebration_rounded, strings.stepDoneTitle, strings.stepDoneBody),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        WebSectionTitle(title: strings.howToBuy),
-        const SizedBox(height: 16),
-        _ResponsiveTiles(
-          children: [
-            for (var i = 0; i < steps.length; i++)
-              _InfoTile(
-                icon: steps[i].$1,
-                badge: '${i + 1}',
-                title: steps[i].$2,
-                body: steps[i].$3,
-                color: AppTheme.brand,
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _ResponsiveTiles extends StatelessWidget {
-  const _ResponsiveTiles({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 900 ? 4 : 2;
-        const spacing = 12.0;
-        // Laid out row by row rather than as a Wrap so every tile in a row is
-        // stretched to the tallest one: Burmese copy runs to more lines than
-        // English and the boxes used to end at different heights.
-        final rows = <List<Widget>>[];
-        for (var i = 0; i < children.length; i += columns) {
-          rows.add(children.sublist(
-              i, i + columns > children.length ? children.length : i + columns));
-        }
-        return Column(
-          children: [
-            for (var r = 0; r < rows.length; r++) ...[
-              if (r > 0) const SizedBox(height: spacing),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var c = 0; c < columns; c++) ...[
-                      if (c > 0) const SizedBox(width: spacing),
-                      Expanded(
-                          child: c < rows[r].length
-                              ? rows[r][c]
-                              : const SizedBox.shrink()),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  const _InfoTile(
-      {required this.icon,
-      required this.title,
-      required this.body,
-      required this.color,
-      this.badge});
-
-  /// Drawn in place of the icon when set - used for the numbered steps.
-  final String? badge;
-  final IconData icon;
-  final String title;
-  final String body;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    // No fixed height: Burmese copy wraps to more lines than English, and a
-    // fixed box would clip it. Tiles in a row may differ slightly in height.
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppTheme.radius),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(12)),
-            alignment: Alignment.center,
-            child: badge != null
-                ? Text(badge!,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(color: color, fontWeight: FontWeight.w800))
-                : Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 12),
-          Text(title,
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(
-            body,
-            style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant, height: 1.5),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _MaintenanceBanner extends StatelessWidget {
   const _MaintenanceBanner({required this.title, required this.message});

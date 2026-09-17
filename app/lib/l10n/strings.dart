@@ -17,7 +17,7 @@ class Strings {
   String get localeName => 'English';
 
   // --- generic
-  String get appName => 'Game Store';
+  String get appName => 'SSHGameShop';
   String get retry => 'Try again';
   String get cancel => 'Cancel';
   String get confirm => 'Confirm';
@@ -191,7 +191,7 @@ class Strings {
       'Game top-ups, gift cards and premium apps — fast and safe.';
   String get popularGames => 'Popular games';
   String get giftCardsAndApps => 'Gift cards & premium apps';
-  String get whyChooseUs => 'Why Game Store';
+  String get whyChooseUs => 'Why SSHGameShop';
   String get featureInstantTitle => 'Fast delivery';
   String get featureInstantBody => 'Most orders are done within minutes.';
   String get featureSecureTitle => 'Safe wallet';
@@ -546,7 +546,7 @@ class BurmeseStrings extends Strings {
   @override
   String get giftCardsAndApps => 'လက်ဆောင်ကတ်နှင့် Premium အက်ပ်များ';
   @override
-  String get whyChooseUs => 'Game Store ကို ဘာကြောင့် ရွေးသင့်လဲ';
+  String get whyChooseUs => 'SSHGameShop ကို ဘာကြောင့် ရွေးသင့်လဲ';
   @override
   String get featureInstantTitle => 'မြန်ဆန်စွာ ပို့ပေး';
   @override

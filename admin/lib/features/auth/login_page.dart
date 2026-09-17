@@ -70,7 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Game Store',
+                                Text('SSHGameShop',
                                     style: theme.textTheme.titleLarge),
                                 Text(
                                   'Admin panel',

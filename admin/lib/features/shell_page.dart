@@ -58,7 +58,7 @@ class AdminShell extends ConsumerWidget {
                   Image.asset('assets/brand/logo.png', width: 34, height: 34),
                   if (extended) ...[
                     const SizedBox(width: 10),
-                    Text('Game Store', style: theme.textTheme.titleSmall),
+                    Text('SSHGameShop', style: theme.textTheme.titleSmall),
                   ],
                 ],
               ),

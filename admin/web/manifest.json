@@ -1,11 +1,11 @@
 {
-    "name": "Game Store Admin",
+    "name": "SSHGameShop Admin",
     "short_name": "GS Admin",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0D0F15",
     "theme_color": "#4F46E5",
-    "description": "Game Store staff panel.",
+    "description": "SSHGameShop staff panel.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
