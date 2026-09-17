@@ -88,8 +88,6 @@ class _HomeContent extends ConsumerWidget {
         SizedBox(height: wide ? 28 : 16),
         PageContainer(child: _Hero(banners: data.banners)),
         SizedBox(height: wide ? 28 : 20),
-        if (data.categories.isNotEmpty)
-          PageContainer(child: _CategoryStrip(categories: data.categories)),
         const _RecentOrders(),
         for (final category in data.categories) ...[
           if (products.any((p) => p.categorySlug == category.slug)) ...[
@@ -377,8 +375,8 @@ class _BannerCarouselState extends State<_BannerCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final many = widget.banners.length > 1;
+    // Arrows need room; a phone-height banner gets the dots alone.
     final large = widget.height > 200;
 
     return SizedBox(
@@ -411,44 +409,10 @@ class _BannerCarouselState extends State<_BannerCarousel> {
                           ),
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                            large ? 24 : 12, large ? 20 : 10,
-                            large ? 24 : 12, large ? 56 : 34),
-                        child: AppImage(
-                            url: banner.imageUrl,
-                            radius: 0,
-                            fit: BoxFit.contain,
-                            fallbackIcon: Icons.campaign_rounded),
-                      ),
-                      if ((banner.title ?? '').isNotEmpty)
-                        DecoratedBox(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomLeft,
-                              end: Alignment.topRight,
-                              colors: [Color(0xCC000000), Colors.transparent],
-                              stops: [0, 0.55],
-                            ),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(
-                                large ? 32 : 18, 0, 80, large ? 30 : 16),
-                            child: Align(
-                              alignment: Alignment.bottomLeft,
-                              child: Text(
-                                banner.title!,
-                                maxLines: 2,
-                                style: (large
-                                        ? theme.textTheme.headlineSmall
-                                        : theme.textTheme.titleMedium)
-                                    ?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w800),
-                              ),
-                            ),
-                          ),
-                        ),
+                      AppImage(
+                          url: banner.imageUrl,
+                          radius: 0,
+                          fallbackIcon: Icons.campaign_rounded),
                     ],
                   ),
                 );
@@ -507,8 +471,10 @@ class _ArrowButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Material(
-        color: Colors.black45,
-        shape: const CircleBorder(),
+        color: Colors.black.withValues(alpha: 0.62),
+        shape: CircleBorder(
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.28))),
+        clipBehavior: Clip.antiAlias,
         child:
             IconButton(onPressed: onTap, icon: Icon(icon, color: Colors.white)),
       ),
@@ -516,102 +482,6 @@ class _ArrowButton extends StatelessWidget {
   }
 }
 
-// ------------------------------------------------------------------ categories
-
-class _CategoryStrip extends StatelessWidget {
-  const _CategoryStrip({required this.categories});
-
-  final List<catalog.Category> categories;
-
-  static IconData iconFor(String slug) => switch (slug) {
-        'mobile-games' => Icons.sports_esports_rounded,
-        'gift-cards' => Icons.card_giftcard_rounded,
-        'premium-apps' => Icons.workspace_premium_rounded,
-        'vouchers' => Icons.confirmation_num_rounded,
-        _ => Icons.category_rounded,
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final strings = Strings.of(context);
-    final wide = Breakpoints.isWide(context);
-
-    Widget tile(catalog.Category category, int index) {
-      final color = accentFor(index);
-      return InkWell(
-        onTap: () => context.go('/shop?category=${category.slug}'),
-        borderRadius: BorderRadius.circular(AppTheme.radius),
-        child: Ink(
-          padding: EdgeInsets.all(wide ? 18 : 12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppTheme.radius),
-            border: Border.all(color: theme.dividerColor),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: wide ? 46 : 38,
-                height: wide ? 46 : 38,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(iconFor(category.slug),
-                    color: color, size: wide ? 24 : 20),
-              ),
-              const SizedBox(width: 12),
-              Flexible(
-                fit: wide ? FlexFit.tight : FlexFit.loose,
-                child: Text(
-                  category.localisedName(strings.isBurmese),
-                  maxLines: wide ? 2 : 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: (wide
-                          ? theme.textTheme.titleSmall
-                          : theme.textTheme.labelLarge)
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (!wide) {
-      // Burmese category names wrap mid-word in narrow tiles, so phones get a
-      // single scrolling row where every label stays on one line.
-      return SizedBox(
-        height: 56,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: categories.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
-          itemBuilder: (context, i) => tile(categories[i], i),
-        ),
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const spacing = 12.0;
-        final width = (constraints.maxWidth - spacing * 3) / 4;
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: [
-            for (var i = 0; i < categories.length; i++)
-              SizedBox(width: width, child: tile(categories[i], i)),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// ----------------------------------------------------------------------- grids
 
 class _GameGrid extends StatelessWidget {
   const _GameGrid({required this.products});

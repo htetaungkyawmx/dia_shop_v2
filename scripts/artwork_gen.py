@@ -237,3 +237,52 @@ def make_banner(name, cat, slug, out):
         d.text((rx, y), ln, font=nf, fill=(255,255,255))
         y+=int(88*2)
     big.resize((BW, BH), Image.LANCZOS).save(out, "PNG")
+
+
+def make_hero(name, artwork_path, out, accent=(77, 141, 255)):
+    """Compose a wide slide from a product's own artwork.
+
+    The artwork is usually square, so a slide that simply contained it was
+    mostly empty. Here a blurred, darkened copy fills the canvas and the
+    artwork sits on top at its own aspect ratio, with the name beside it.
+    """
+    W, H = 1280, 512
+    art = Image.open(artwork_path).convert("RGB")
+
+    # Backdrop: the artwork blown up to cover, blurred and darkened.
+    scale = max(W / art.width, H / art.height)
+    back = art.resize((int(art.width * scale), int(art.height * scale)), Image.LANCZOS)
+    left = (back.width - W) // 2
+    top = (back.height - H) // 2
+    back = back.crop((left, top, left + W, top + H))
+    back = back.filter(ImageFilter.GaussianBlur(28))
+    back = Image.blend(back, Image.new("RGB", (W, H), (7, 11, 26)), 0.55)
+
+    # Artwork at its own ratio, on the left.
+    box = int(H * 0.72)
+    fit = min(box / art.width, box / art.height)
+    art = art.resize((int(art.width * fit), int(art.height * fit)), Image.LANCZOS)
+    ax = int(W * 0.16) - art.width // 2
+    ay = (H - art.height) // 2
+    back.paste(art, (max(ax, 24), ay))
+
+    d = ImageDraw.Draw(back)
+    words = name.split()
+    lines, cur = [], ""
+    nf = font(58)
+    tx = int(W * 0.34)
+    for w in words:
+        t = (cur + " " + w).strip()
+        if d.textbbox((0, 0), t, font=nf)[2] > W - tx - 60 and cur:
+            lines.append(cur); cur = w
+        else:
+            cur = t
+    if cur:
+        lines.append(cur)
+    lines = lines[:3]
+    y = (H - len(lines) * 70) // 2
+    for ln in lines:
+        d.text((tx + 2, y + 2), ln, font=nf, fill=(0, 0, 0))
+        d.text((tx, y), ln, font=nf, fill=(255, 255, 255))
+        y += 70
+    back.save(out, "PNG")

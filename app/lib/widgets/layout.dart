@@ -551,18 +551,8 @@ class SiteFooter extends ConsumerWidget {
     final strings = Strings.of(context);
     final config = ref.watch(appConfigProvider).value;
     final methods = ref.watch(publicPaymentMethodsProvider).value ?? const [];
-    final categories = ref.watch(categoriesProvider).value ?? const [];
     final muted = theme.textTheme.bodySmall
         ?.copyWith(color: theme.colorScheme.onSurfaceVariant, height: 1.6);
-
-    Widget column(String title, List<Widget> children) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: theme.textTheme.titleSmall),
-            const SizedBox(height: 12),
-            ...children,
-          ],
-        );
 
     Widget link(String label, VoidCallback onTap) => InkWell(
           onTap: onTap,
@@ -587,19 +577,14 @@ class SiteFooter extends ConsumerWidget {
 
     // The mark, name and tagline are shown once, centred above these columns,
     // so this list is links only.
-    final columns = <Widget>[
-      column(strings.footerShop, [
-        for (final c in categories)
-          link(c.localisedName(strings.isBurmese),
-              () => context.go('/shop?category=${c.slug}')),
-      ]),
-      column(strings.footerAccount, [
-        link(strings.myOrders, () => context.go('/orders')),
-        link(strings.myWallet, () => context.go('/wallet')),
-        link(strings.topUp, () => context.push('/wallet/topup')),
-        link(strings.profile, () => context.go('/profile')),
-      ]),
-      column(strings.footerHelp, supportLinks),
+    // Flat list of links: the footer is one strip, not three columns.
+    final footerLinks = <Widget>[
+      link(strings.myOrders, () => context.go('/orders')),
+      link(strings.myWallet, () => context.go('/wallet')),
+      link(strings.topUp, () => context.push('/wallet/topup')),
+      link(strings.profile, () => context.go('/profile')),
+      link('Blogs', () => context.go('/blogs')),
+      ...supportLinks,
     ];
 
     return Container(
@@ -610,30 +595,32 @@ class SiteFooter extends ConsumerWidget {
       ),
       child: PageContainer(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 44),
+          padding: const EdgeInsets.symmetric(vertical: 22),
+          // A short strip, not a page of its own: the mark and the links sit on
+          // one line on a wide screen and stack on a narrow one.
           child: Column(
             children: [
-              // A single centred block: the shop's mark, what it sells and how
-              // to reach it, rather than four columns of links.
-              const AppLogo(size: 54),
-              const SizedBox(height: 14),
-              Text(strings.appName,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800)),
-              const SizedBox(height: 8),
-              Text(strings.tagline, style: muted, textAlign: TextAlign.center),
-              const SizedBox(height: 22),
               Wrap(
                 alignment: WrapAlignment.center,
-                spacing: 40,
-                runSpacing: 24,
-                children: columns,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 28,
+                runSpacing: 14,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const AppLogo(size: 30),
+                      const SizedBox(width: 10),
+                      Text(strings.appName,
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                  ...footerLinks,
+                ],
               ),
               if (methods.isNotEmpty) ...[
-                const SizedBox(height: 26),
-                Text(strings.footerPayments,
-                    style: theme.textTheme.labelLarge),
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
                 Wrap(
                   alignment: WrapAlignment.center,
                   spacing: 8,
@@ -642,19 +629,17 @@ class SiteFooter extends ConsumerWidget {
                     for (final m in methods)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           border: Border.all(color: theme.dividerColor),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(m.name, style: theme.textTheme.labelMedium),
+                        child: Text(m.name, style: theme.textTheme.labelSmall),
                       ),
                   ],
                 ),
               ],
-              const SizedBox(height: 30),
-              const Divider(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               Text(
                   '© ${DateTime.now().year} ${strings.appName}. ${strings.allRightsReserved}',
                   style: muted,
