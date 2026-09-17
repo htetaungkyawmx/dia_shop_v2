@@ -48,10 +48,21 @@ def main():
     activate = "--activate" in flags
     base = api.rstrip("/") + "/api/v1"
 
-    with open(codes_file, encoding="utf-8") as fh:
-        codes = [ln.strip() for ln in fh if ln.strip() and not ln.strip().startswith("#")]
+    try:
+        with open(codes_file, encoding="utf-8") as fh:
+            codes = [ln.strip() for ln in fh
+                     if ln.strip() and not ln.strip().startswith("#")]
+    except FileNotFoundError:
+        raise SystemExit(
+            f"\nNo such file: {codes_file}\n\n"
+            "This command is only needed AFTER you have bought real gift-card\n"
+            "codes from a supplier. Until then the product sells by hand and\n"
+            "there is nothing to run.\n\n"
+            "When you do have codes, put one per line in a text file, e.g.\n"
+            f"    printf '%s\\n' CODE-ONE CODE-TWO > {codes_file}\n"
+            "then run this command again.\n")
     if not codes:
-        raise SystemExit("No codes found in the file.")
+        raise SystemExit(f"{codes_file} is empty - put one code per line.")
 
     tok = call(base, "POST", "/auth/login", body={"email": email, "password": password})["accessToken"]
     print("signed in")
