@@ -63,10 +63,10 @@ class _HomeContent extends ConsumerWidget {
     final wide = Breakpoints.isWide(context);
     final gap = wide ? 48.0 : 28.0;
 
-    final games =
-        data.featured.where((p) => p.categorySlug == 'mobile-games').toList();
-    final others =
-        data.featured.where((p) => p.categorySlug != 'mobile-games').toList();
+    // Every product, grouped under its category, so the home page is the whole
+    // catalogue instead of a teaser that sends the visitor somewhere else.
+    final all = ref.watch(productsProvider(const ProductQuery()));
+    final products = all.value ?? data.featured;
 
     return ListView(
       padding: EdgeInsets.zero,
@@ -91,24 +91,18 @@ class _HomeContent extends ConsumerWidget {
         if (data.categories.isNotEmpty)
           PageContainer(child: _CategoryStrip(categories: data.categories)),
         const _RecentOrders(),
-        if (games.isNotEmpty) ...[
-          SizedBox(height: gap),
-          PageContainer(child: WebSectionTitle(title: strings.popularGames)),
-          const SizedBox(height: 16),
-          PageContainer(child: _GameGrid(products: games)),
-          const SizedBox(height: 22),
-          _ViewMore(onTap: () => context.go('/shop?category=mobile-games')),
+        for (final category in data.categories) ...[
+          if (products.any((p) => p.categorySlug == category.slug)) ...[
+            SizedBox(height: gap),
+            _CategorySection(
+              title: category.localisedName(strings.isBurmese),
+              products: products
+                  .where((p) => p.categorySlug == category.slug)
+                  .toList(),
+            ),
+          ],
         ],
-        if (others.isNotEmpty) ...[
-          SizedBox(height: gap),
-          PageContainer(
-              child: WebSectionTitle(title: strings.giftCardsAndApps)),
-          const SizedBox(height: 16),
-          PageContainer(child: _GameGrid(products: others)),
-          const SizedBox(height: 22),
-          _ViewMore(onTap: () => context.go('/shop')),
-        ],
-        if (data.featured.isEmpty)
+        if (products.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 40),
             child: EmptyView(
@@ -124,33 +118,56 @@ class _HomeContent extends ConsumerWidget {
   }
 }
 
-/// Centred pill that closes a section, rather than a link in its corner.
-class _ViewMore extends StatelessWidget {
-  const _ViewMore({required this.onTap});
+/// A category's products, showing a first page and growing in place when the
+/// visitor asks for more - rather than sending them to a separate list.
+class _CategorySection extends StatefulWidget {
+  const _CategorySection({required this.title, required this.products});
 
-  final VoidCallback onTap;
+  final String title;
+  final List<catalog.ProductSummary> products;
+
+  @override
+  State<_CategorySection> createState() => _CategorySectionState();
+}
+
+class _CategorySectionState extends State<_CategorySection> {
+  static const _pageSize = 12;
+  int _shown = _pageSize;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        width: 210,
-        child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
-          shape: const StadiumBorder(),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
-          foregroundColor: Colors.white,
-        ),
-          child: Text(Strings.of(context).viewAll),
-        ),
-      ),
+    final strings = Strings.of(context);
+    final visible = widget.products.take(_shown).toList();
+    final remaining = widget.products.length - visible.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PageContainer(child: WebSectionTitle(title: widget.title)),
+        const SizedBox(height: 16),
+        PageContainer(child: _GameGrid(products: visible)),
+        if (remaining > 0) ...[
+          const SizedBox(height: 22),
+          Center(
+            child: SizedBox(
+              width: 210,
+              child: OutlinedButton(
+                onPressed: () => setState(() => _shown += _pageSize),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: const StadiumBorder(),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+                  foregroundColor: Colors.white,
+                ),
+                child: Text(strings.viewAll),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
-
-// ------------------------------------------------------------------ mobile top
 
 class _MobileTopBar extends ConsumerWidget {
   const _MobileTopBar();
@@ -261,7 +278,7 @@ class _Hero extends StatelessWidget {
     // beside it competed with the artwork; the balance is in the header.
     return banners.isEmpty
         ? const _WelcomeBanner()
-        : _BannerCarousel(banners: banners, height: wide ? 340 : 170);
+        : _BannerCarousel(banners: banners, height: wide ? 260 : 150);
   }
 }
 

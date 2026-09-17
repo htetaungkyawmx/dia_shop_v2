@@ -139,7 +139,6 @@ class WebHeader extends ConsumerWidget {
     final showSearchField = Breakpoints.isDesktop(context);
 
     final links = <(String, String, IconData)>[
-      (strings.shop, '/shop', Icons.storefront_rounded),
       ('ID Checker', '/id-check', Icons.badge_outlined),
       ('Blogs', '/blogs', Icons.menu_book_rounded),
       if (user != null) (strings.orders, '/orders', Icons.receipt_long_rounded),
