@@ -38,3 +38,7 @@ scripts/deploy.env
 deploy/web/
 deploy/backups/
 scripts/deploy-shared.env
+
+# Gift-card codes are secrets - never commit them
+codes*.txt
+*-codes.txt
