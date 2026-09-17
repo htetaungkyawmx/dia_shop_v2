@@ -198,19 +198,11 @@ class VariantTile extends StatelessWidget {
               width: selected ? 1.6 : 1,
             ),
           ),
+          // A package row is the name with its price beneath it. The gem
+          // thumbnail that used to lead the row was the same on every package
+          // and pushed the name and price into a narrow column.
           child: Row(
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  gradient: AppTheme.goldGradient,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.diamond_rounded,
-                    color: Colors.white, size: 21),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,6 +211,28 @@ class VariantTile extends StatelessWidget {
                       variant.localisedName(strings.isBurmese),
                       style: theme.textTheme.titleSmall
                           ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          Format.money(variant.price),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        if (variant.isOnSale) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            Format.money(variant.compareAtPrice!),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              decoration: TextDecoration.lineThrough,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     if (popular ||
                         variant.bonusText != null ||
@@ -253,35 +267,6 @@ class VariantTile extends StatelessWidget {
                     ],
                   ],
                 ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (variant.isOnSale)
-                    Text(
-                      Format.money(variant.compareAtPrice!),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        decoration: TextDecoration.lineThrough,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  Text(
-                    Format.money(variant.price),
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  if (variant.isOnSale)
-                    Text(
-                      '-${variant.discountPercent}%',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: AppTheme.success,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                ],
               ),
             ],
           ),
