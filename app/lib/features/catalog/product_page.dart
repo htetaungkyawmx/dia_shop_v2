@@ -1,5 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -405,12 +403,25 @@ class _ProductBodyState extends ConsumerState<_ProductBody> {
                                           CrossAxisAlignment.end,
                                       children: [
                                         if (detail.imageUrl != null) ...[
-                                          AppImage(
-                                              url: detail.imageUrl,
-                                              width: 96,
-                                              height: 132,
-                                              radius: 14),
-                                          const SizedBox(width: 18),
+                                          Container(
+                                            width: 128,
+                                            height: 128,
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.28),
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                              border: Border.all(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.12)),
+                                            ),
+                                            child: AppImage(
+                                                url: detail.imageUrl,
+                                                radius: 0,
+                                                fit: BoxFit.contain),
+                                          ),
+                                          const SizedBox(width: 20),
                                         ],
                                         Expanded(
                                             child: _titleBlock(context,
@@ -560,28 +571,11 @@ class _HeroBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (detail.bannerUrl != null) {
-      return AppImage(
-          url: detail.bannerUrl,
-          radius: 0,
-          fallbackIcon: Icons.sports_esports_rounded);
-    }
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        const DecoratedBox(
-            decoration: BoxDecoration(gradient: AppTheme.brandGradientDark)),
-        if (detail.imageUrl != null)
-          Opacity(
-            opacity: 0.55,
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(
-                  sigmaX: 28, sigmaY: 28, tileMode: TileMode.decal),
-              child: AppImage(url: detail.imageUrl, radius: 0),
-            ),
-          ),
-      ],
-    );
+    // Artwork is a mix of key art and transparent logos. Stretching or
+    // blurring either one looked muddy, so the header is a flat brand
+    // gradient and the artwork itself is shown intact in the foreground.
+    return const DecoratedBox(
+        decoration: BoxDecoration(gradient: AppTheme.brandGradientDark));
   }
 }
 

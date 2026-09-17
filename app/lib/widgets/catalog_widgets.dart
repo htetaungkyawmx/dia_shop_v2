@@ -1,5 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
@@ -390,30 +388,31 @@ class _GameCardState extends State<GameCard> {
                   fit: StackFit.expand,
                   children: [
                     if (product.imageUrl != null)
-                      // Artwork varies: some products carry tall key art, others
-                      // a wide logo. Cover-fitting a wide logo into this
-                      // portrait card cuts the ends off, so the whole image is
-                      // contained and a blurred copy fills the space behind it.
+                      // Artwork is a mix of tall key art and wide transparent
+                      // logos. Cover-fitting a wide logo cuts its ends off, and
+                      // blurring a transparent one smears it into a muddy
+                      // wash - so every tile gets the same deep gradient and
+                      // the whole image is contained on top of it.
                       Stack(
                         fit: StackFit.expand,
                         children: [
-                          ImageFiltered(
-                            imageFilter:
-                                ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                          const DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF1B1F31), Color(0xFF0B0D16)],
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 12, 12, 34),
                             child: AppImage(
                                 url: product.imageUrl,
                                 radius: 0,
+                                fit: BoxFit.contain,
                                 fallbackIcon: Icons.sports_esports_rounded),
                           ),
-                          const DecoratedBox(
-                            decoration:
-                                BoxDecoration(color: Color(0x33000000)),
-                          ),
-                          AppImage(
-                              url: product.imageUrl,
-                              radius: 0,
-                              fit: BoxFit.contain,
-                              fallbackIcon: Icons.sports_esports_rounded),
                         ],
                       )
                     else
