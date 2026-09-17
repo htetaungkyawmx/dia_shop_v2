@@ -432,11 +432,9 @@ class _GameCardState extends State<GameCard> {
                             child: Wrap(
                               spacing: 6,
                               children: [
-                                if (product.featured)
-                                  const _Pill(
-                                      icon: Icons.local_fire_department_rounded,
-                                      label: 'HOT',
-                                      color: AppTheme.gold),
+                                // No "HOT" pill: every product on the home
+                                // grid is featured, so the badge marked all of
+                                // them and told the buyer nothing.
                                 if (product.inStock &&
                                     product.fulfillmentType == 'CODE_DELIVERY')
                                   _Pill(
