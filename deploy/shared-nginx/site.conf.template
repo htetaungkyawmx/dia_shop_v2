@@ -13,10 +13,12 @@ server {
     gzip on;
     gzip_types text/css application/javascript application/json application/wasm image/svg+xml;
 
-    # Content-hashed Flutter assets can be cached for a year...
+    # Flutter's assets/ and canvaskit/ keep the SAME names across builds - only
+    # the entry points are versioned - so "immutable" pinned every visitor to
+    # the font, icon and image set they first downloaded. Revalidate instead:
+    # an unchanged file answers 304, which costs almost nothing.
     location ~* ^/(assets|canvaskit)/ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
+        add_header Cache-Control "no-cache";
         try_files $uri =404;
     }
     # ...but the entry points must always be revalidated or users keep an old build.
@@ -43,8 +45,7 @@ server {
     gzip_types text/css application/javascript application/json application/wasm image/svg+xml;
 
     location ~* ^/(assets|canvaskit)/ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
+        add_header Cache-Control "no-cache";
         try_files $uri =404;
     }
     location ~* ^/(index\.html|flutter_bootstrap\.js|flutter_service_worker\.js|main\.dart\.js|version\.json)$ {

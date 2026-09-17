@@ -71,8 +71,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
         'system' => ThemeMode.system,
         _ => ThemeMode.dark,
       },
-      // Burmese is the default: it is what most customers read.
-      locale: Locale(prefs.getString(_localeKey) ?? 'my'),
+      locale: Locale(prefs.getString(_localeKey) ?? 'en'),
     );
   }
 

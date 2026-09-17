@@ -333,8 +333,9 @@ class _UserRow extends ConsumerWidget {
                     icon: const Icon(Icons.copy_rounded),
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: temporary));
-                      if (context.mounted)
+                      if (context.mounted) {
                         AdminSnack.success(context, 'Copied');
+                      }
                     },
                   ),
                 ],
@@ -387,166 +388,183 @@ class _UserRow extends ConsumerWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: AdminTheme.brand.withValues(alpha: 0.15),
-              child: Text(
-                user.displayName.isEmpty
-                    ? '?'
-                    : user.displayName[0].toUpperCase(),
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(color: AdminTheme.brand),
+        child: LayoutBuilder(builder: (context, c) {
+          // The full table only fits a wide screen. On a phone the secondary
+          // columns are dropped and the balance moves under the e-mail, rather
+          // than every column being squeezed until text wraps one letter a line.
+          final wide = c.maxWidth >= 820;
+          final medium = c.maxWidth >= 620;
+          return Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: AdminTheme.brand.withValues(alpha: 0.15),
+                child: Text(
+                  user.displayName.isEmpty
+                      ? '?'
+                      : user.displayName[0].toUpperCase(),
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(color: AdminTheme.brand),
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              const SizedBox(width: 14),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                            child: Text(user.displayName,
+                                style: theme.textTheme.titleSmall)),
+                        if (user.isAdmin) ...[
+                          const SizedBox(width: 8),
+                          StatusBadge(
+                              status: 'REFUNDED',
+                              label: prettyStatus(user.role)),
+                        ],
+                        if (user.isSuspended) ...[
+                          const SizedBox(width: 8),
+                          const StatusBadge(status: 'SUSPENDED'),
+                        ],
+                      ],
+                    ),
+                    Text(
+                      user.email,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                    if (!medium)
+                      Text(
+                        '${Format.money(user.balance)} · ${user.orderCount} order(s)',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                  ],
+                ),
+              ),
+              if (medium)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                          child: Text(user.displayName,
-                              style: theme.textTheme.titleSmall)),
-                      if (user.isAdmin) ...[
-                        const SizedBox(width: 8),
-                        StatusBadge(
-                            status: 'REFUNDED', label: prettyStatus(user.role)),
-                      ],
-                      if (user.isSuspended) ...[
-                        const SizedBox(width: 8),
-                        const StatusBadge(status: 'SUSPENDED'),
-                      ],
+                      Text(Format.money(user.balance),
+                          style: theme.textTheme.titleSmall),
+                      Text(
+                        'balance',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
+                      ),
                     ],
                   ),
-                  Text(
-                    user.email,
+                ),
+              if (wide)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(Format.money(user.totalSpent),
+                          style: theme.textTheme.bodyMedium),
+                      Text(
+                        '${user.orderCount} order(s)',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+              if (wide)
+                SizedBox(
+                  width: 96,
+                  child: Text(
+                    user.lastLoginAt == null
+                        ? 'never'
+                        : Format.relative(user.lastLoginAt!),
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(Format.money(user.balance),
-                      style: theme.textTheme.titleSmall),
-                  Text(
-                    'balance',
-                    style: theme.textTheme.labelSmall
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(Format.money(user.totalSpent),
-                      style: theme.textTheme.bodyMedium),
-                  Text(
-                    '${user.orderCount} order(s)',
-                    style: theme.textTheme.labelSmall
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              width: 96,
-              child: Text(
-                user.lastLoginAt == null
-                    ? 'never'
-                    : Format.relative(user.lastLoginAt!),
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (value) async {
-                switch (value) {
-                  case 'balance':
-                    await _adjustBalance(context, ref);
-                  case 'suspend':
-                    await _setStatus(context, ref, 'SUSPENDED');
-                  case 'activate':
-                    await _setStatus(context, ref, 'ACTIVE');
-                  case 'make_admin':
-                    await _setRole(context, ref, 'ADMIN');
-                  case 'make_user':
-                    await _setRole(context, ref, 'USER');
-                  case 'reset_password':
-                    await _resetPassword(context, ref);
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'balance',
-                  child: Row(children: [
-                    Icon(Icons.tune_rounded, size: 18),
-                    SizedBox(width: 10),
-                    Text('Adjust balance'),
-                  ]),
                 ),
-                if (!isSelf) ...[
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  switch (value) {
+                    case 'balance':
+                      await _adjustBalance(context, ref);
+                    case 'suspend':
+                      await _setStatus(context, ref, 'SUSPENDED');
+                    case 'activate':
+                      await _setStatus(context, ref, 'ACTIVE');
+                    case 'make_admin':
+                      await _setRole(context, ref, 'ADMIN');
+                    case 'make_user':
+                      await _setRole(context, ref, 'USER');
+                    case 'reset_password':
+                      await _resetPassword(context, ref);
+                  }
+                },
+                itemBuilder: (context) => [
                   const PopupMenuItem(
-                    value: 'reset_password',
+                    value: 'balance',
                     child: Row(children: [
-                      Icon(Icons.key_rounded, size: 18),
+                      Icon(Icons.tune_rounded, size: 18),
                       SizedBox(width: 10),
-                      Text('Reset password'),
+                      Text('Adjust balance'),
                     ]),
                   ),
-                  const PopupMenuDivider(),
-                  if (user.isSuspended)
+                  if (!isSelf) ...[
                     const PopupMenuItem(
-                      value: 'activate',
+                      value: 'reset_password',
                       child: Row(children: [
-                        Icon(Icons.lock_open_rounded, size: 18),
+                        Icon(Icons.key_rounded, size: 18),
                         SizedBox(width: 10),
-                        Text('Restore account'),
-                      ]),
-                    )
-                  else
-                    const PopupMenuItem(
-                      value: 'suspend',
-                      child: Row(children: [
-                        Icon(Icons.block_rounded,
-                            size: 18, color: AdminTheme.danger),
-                        SizedBox(width: 10),
-                        Text('Suspend account'),
+                        Text('Reset password'),
                       ]),
                     ),
-                  if (canChangeRole)
-                    user.isAdmin
-                        ? const PopupMenuItem(
-                            value: 'make_user',
-                            child: Row(children: [
-                              Icon(Icons.person_outline_rounded, size: 18),
-                              SizedBox(width: 10),
-                              Text('Remove admin access'),
-                            ]),
-                          )
-                        : const PopupMenuItem(
-                            value: 'make_admin',
-                            child: Row(children: [
-                              Icon(Icons.admin_panel_settings_outlined,
-                                  size: 18),
-                              SizedBox(width: 10),
-                              Text('Make admin'),
-                            ]),
-                          ),
+                    const PopupMenuDivider(),
+                    if (user.isSuspended)
+                      const PopupMenuItem(
+                        value: 'activate',
+                        child: Row(children: [
+                          Icon(Icons.lock_open_rounded, size: 18),
+                          SizedBox(width: 10),
+                          Text('Restore account'),
+                        ]),
+                      )
+                    else
+                      const PopupMenuItem(
+                        value: 'suspend',
+                        child: Row(children: [
+                          Icon(Icons.block_rounded,
+                              size: 18, color: AdminTheme.danger),
+                          SizedBox(width: 10),
+                          Text('Suspend account'),
+                        ]),
+                      ),
+                    if (canChangeRole)
+                      user.isAdmin
+                          ? const PopupMenuItem(
+                              value: 'make_user',
+                              child: Row(children: [
+                                Icon(Icons.person_outline_rounded, size: 18),
+                                SizedBox(width: 10),
+                                Text('Remove admin access'),
+                              ]),
+                            )
+                          : const PopupMenuItem(
+                              value: 'make_admin',
+                              child: Row(children: [
+                                Icon(Icons.admin_panel_settings_outlined,
+                                    size: 18),
+                                SizedBox(width: 10),
+                                Text('Make admin'),
+                              ]),
+                            ),
+                  ],
                 ],
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

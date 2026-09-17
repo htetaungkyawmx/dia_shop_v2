@@ -915,13 +915,33 @@ class _ResponsiveTiles extends StatelessWidget {
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 900 ? 4 : 2;
         const spacing = 12.0;
-        final width =
-            (constraints.maxWidth - spacing * (columns - 1)) / columns;
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
+        // Laid out row by row rather than as a Wrap so every tile in a row is
+        // stretched to the tallest one: Burmese copy runs to more lines than
+        // English and the boxes used to end at different heights.
+        final rows = <List<Widget>>[];
+        for (var i = 0; i < children.length; i += columns) {
+          rows.add(children.sublist(
+              i, i + columns > children.length ? children.length : i + columns));
+        }
+        return Column(
           children: [
-            for (final child in children) SizedBox(width: width, child: child)
+            for (var r = 0; r < rows.length; r++) ...[
+              if (r > 0) const SizedBox(height: spacing),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var c = 0; c < columns; c++) ...[
+                      if (c > 0) const SizedBox(width: spacing),
+                      Expanded(
+                          child: c < rows[r].length
+                              ? rows[r][c]
+                              : const SizedBox.shrink()),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
         );
       },

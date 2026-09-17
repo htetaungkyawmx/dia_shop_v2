@@ -52,9 +52,9 @@ JAR=$(ls backend/target/*.jar | grep -v original | head -1)
 ok "$(basename "$JAR") ($(du -h "$JAR" | cut -f1))"
 
 step "Building both web apps against https://api.$DOMAIN"
-( cd app   && flutter build web --release --dart-define=API_BASE_URL="https://api.$DOMAIN" >/dev/null )
+( cd app   && flutter build web --release --no-tree-shake-icons --dart-define=API_BASE_URL="https://api.$DOMAIN" >/dev/null )
 ok "customer app"
-( cd admin && flutter build web --release --dart-define=API_BASE_URL="https://api.$DOMAIN" >/dev/null )
+( cd admin && flutter build web --release --no-tree-shake-icons --dart-define=API_BASE_URL="https://api.$DOMAIN" >/dev/null )
 ok "admin panel"
 
 step "Preparing the server"

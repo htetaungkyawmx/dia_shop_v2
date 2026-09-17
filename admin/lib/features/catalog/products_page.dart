@@ -284,129 +284,144 @@ class _VariantRow extends ConsumerWidget {
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                        child: Text(variant.name,
-                            style: theme.textTheme.bodyLarge)),
-                    if (!variant.active) ...[
-                      const SizedBox(width: 8),
-                      const StatusBadge(status: 'CANCELLED', label: 'Hidden'),
+      child: LayoutBuilder(builder: (context, c) {
+        // Same table-on-a-phone problem as the user list: below this width the
+        // price and stock columns are folded under the SKU instead of being
+        // squeezed into a few pixels each.
+        final wide = c.maxWidth >= 560;
+        return Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                          child: Text(variant.name,
+                              style: theme.textTheme.bodyLarge)),
+                      if (!variant.active) ...[
+                        const SizedBox(width: 8),
+                        const StatusBadge(status: 'CANCELLED', label: 'Hidden'),
+                      ],
                     ],
+                  ),
+                  Text(
+                    variant.sku,
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  if (!wide)
+                    Text(
+                      '${Format.money(variant.price)} · ${variant.isUnlimited ? 'Unlimited' : '${variant.available} in stock'}',
+                      style: theme.textTheme.labelSmall
+                          ?.copyWith(color: stockColor),
+                    ),
+                ],
+              ),
+            ),
+            if (wide)
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(Format.money(variant.price),
+                        style: theme.textTheme.titleSmall),
+                    Text(
+                      'margin ${Format.money(variant.margin)}',
+                      style: theme.textTheme.labelSmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
                   ],
                 ),
-                Text(
-                  variant.sku,
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            if (wide)
+              SizedBox(
+                width: 140,
+                child: Row(
+                  children: [
+                    Icon(
+                      variant.isUnlimited
+                          ? Icons.all_inclusive_rounded
+                          : variant.isCodePool
+                              ? Icons.vpn_key_rounded
+                              : Icons.inventory_2_outlined,
+                      size: 16,
+                      color: stockColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      variant.isUnlimited
+                          ? 'Unlimited'
+                          : '${variant.available} in stock',
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: stockColor),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            IconButton(
+              tooltip: 'Manage stock',
+              onPressed: () => StockSheet.show(context, variant, onChanged),
+              icon: const Icon(Icons.inventory_rounded, size: 18),
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(Format.money(variant.price),
-                    style: theme.textTheme.titleSmall),
-                Text(
-                  'margin ${Format.money(variant.margin)}',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
-              ],
+            IconButton(
+              tooltip: 'Edit package',
+              onPressed: () async {
+                final saved = await VariantEditor.show(
+                  context,
+                  productId: variant.productId,
+                  variant: variant,
+                );
+                if (saved == true) onChanged();
+              },
+              icon: const Icon(Icons.edit_outlined, size: 18),
             ),
-          ),
-          SizedBox(
-            width: 140,
-            child: Row(
-              children: [
-                Icon(
-                  variant.isUnlimited
-                      ? Icons.all_inclusive_rounded
-                      : variant.isCodePool
-                          ? Icons.vpn_key_rounded
-                          : Icons.inventory_2_outlined,
-                  size: 16,
-                  color: stockColor,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  variant.isUnlimited
-                      ? 'Unlimited'
-                      : '${variant.available} in stock',
-                  style: theme.textTheme.bodySmall?.copyWith(color: stockColor),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: 'Manage stock',
-            onPressed: () => StockSheet.show(context, variant, onChanged),
-            icon: const Icon(Icons.inventory_rounded, size: 18),
-          ),
-          IconButton(
-            tooltip: 'Edit package',
-            onPressed: () async {
-              final saved = await VariantEditor.show(
-                context,
-                productId: variant.productId,
-                variant: variant,
-              );
-              if (saved == true) onChanged();
-            },
-            icon: const Icon(Icons.edit_outlined, size: 18),
-          ),
-          IconButton(
-            tooltip: variant.active ? 'Hide from shop' : 'Already hidden',
-            onPressed: variant.active
-                ? () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Hide package'),
-                        content: Text(
-                          '"${variant.name}" will stop appearing in the shop. '
-                          'Past orders keep their history.',
+            IconButton(
+              tooltip: variant.active ? 'Hide from shop' : 'Already hidden',
+              onPressed: variant.active
+                  ? () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Hide package'),
+                          content: Text(
+                            '"${variant.name}" will stop appearing in the shop. '
+                            'Past orders keep their history.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                  backgroundColor: AdminTheme.danger),
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Hide'),
+                            ),
+                          ],
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
-                          ),
-                          FilledButton(
-                            style: FilledButton.styleFrom(
-                                backgroundColor: AdminTheme.danger),
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Hide'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed != true) return;
-                    try {
-                      await ref.read(apiProvider).archiveVariant(variant.id);
-                      onChanged();
-                      if (context.mounted) {
-                        AdminSnack.success(context, 'Package hidden');
+                      );
+                      if (confirmed != true) return;
+                      try {
+                        await ref.read(apiProvider).archiveVariant(variant.id);
+                        onChanged();
+                        if (context.mounted) {
+                          AdminSnack.success(context, 'Package hidden');
+                        }
+                      } catch (error) {
+                        if (context.mounted) AdminSnack.error(context, error);
                       }
-                    } catch (error) {
-                      if (context.mounted) AdminSnack.error(context, error);
                     }
-                  }
-                : null,
-            icon: const Icon(Icons.visibility_off_outlined, size: 18),
-          ),
-        ],
-      ),
+                  : null,
+              icon: const Icon(Icons.visibility_off_outlined, size: 18),
+            ),
+          ],
+        );
+      }),
     );
   }
 }

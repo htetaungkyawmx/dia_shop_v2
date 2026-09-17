@@ -303,7 +303,7 @@ class _LanguageToggle extends ConsumerWidget {
       onPressed: () => ref
           .read(settingsProvider.notifier)
           .setLocale(Locale(burmese ? 'en' : 'my')),
-      child: Text(burmese ? 'EN' : 'မြန်မာ'),
+      child: Text(burmese ? 'EN' : 'MM'),
     );
   }
 }
