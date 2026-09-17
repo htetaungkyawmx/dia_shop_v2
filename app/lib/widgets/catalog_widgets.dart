@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
@@ -388,10 +390,32 @@ class _GameCardState extends State<GameCard> {
                   fit: StackFit.expand,
                   children: [
                     if (product.imageUrl != null)
-                      AppImage(
-                          url: product.imageUrl,
-                          radius: 0,
-                          fallbackIcon: Icons.sports_esports_rounded)
+                      // Artwork varies: some products carry tall key art, others
+                      // a wide logo. Cover-fitting a wide logo into this
+                      // portrait card cuts the ends off, so the whole image is
+                      // contained and a blurred copy fills the space behind it.
+                      Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ImageFiltered(
+                            imageFilter:
+                                ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+                            child: AppImage(
+                                url: product.imageUrl,
+                                radius: 0,
+                                fallbackIcon: Icons.sports_esports_rounded),
+                          ),
+                          const DecoratedBox(
+                            decoration:
+                                BoxDecoration(color: Color(0x33000000)),
+                          ),
+                          AppImage(
+                              url: product.imageUrl,
+                              radius: 0,
+                              fit: BoxFit.contain,
+                              fallbackIcon: Icons.sports_esports_rounded),
+                        ],
+                      )
                     else
                       _ArtPlaceholder(
                           name: product.localisedName(strings.isBurmese)),
