@@ -19,8 +19,11 @@ class DiaShopApp extends ConsumerWidget {
       title: 'Game Store',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      themeMode: settings.themeMode,
-      theme: AppTheme.light(),
+      // Dark only. The storefront is designed around artwork on deep navy;
+      // the pale theme was never styled to match and made the shop look like a
+      // different site depending on the visitor's device setting.
+      themeMode: ThemeMode.dark,
+      theme: AppTheme.dark(),
       darkTheme: AppTheme.dark(),
       locale: settings.locale,
       supportedLocales: Strings.supportedLocales,

@@ -107,19 +107,6 @@ class ProfilePage extends ConsumerWidget {
                       style: theme.textTheme.bodyMedium),
                   onTap: () => _pickLanguage(context, ref),
                 ),
-                _Tile(
-                  icon: Icons.brightness_6_outlined,
-                  label: strings.theme,
-                  trailing: Text(
-                    switch (ref.watch(settingsProvider).themeMode) {
-                      ThemeMode.light => strings.themeLight,
-                      ThemeMode.dark => strings.themeDark,
-                      ThemeMode.system => strings.themeSystem,
-                    },
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  onTap: () => _pickTheme(context, ref),
-                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -196,37 +183,6 @@ class ProfilePage extends ConsumerWidget {
     );
     if (choice != null) {
       await ref.read(settingsProvider.notifier).setLocale(Locale(choice));
-    }
-  }
-
-  static Future<void> _pickTheme(BuildContext context, WidgetRef ref) async {
-    final strings = Strings.of(context);
-    final current = ref.read(settingsProvider).themeMode;
-    final choice = await showModalBottomSheet<ThemeMode>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: RadioGroup<ThemeMode>(
-          groupValue: current,
-          onChanged: (value) => Navigator.pop(context, value),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final mode in ThemeMode.values)
-                RadioListTile<ThemeMode>(
-                  value: mode,
-                  title: Text(switch (mode) {
-                    ThemeMode.light => strings.themeLight,
-                    ThemeMode.dark => strings.themeDark,
-                    ThemeMode.system => strings.themeSystem,
-                  }),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (choice != null) {
-      await ref.read(settingsProvider.notifier).setThemeMode(choice);
     }
   }
 
